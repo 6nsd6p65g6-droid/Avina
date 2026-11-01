@@ -22,10 +22,16 @@ drop policy if exists "profiles_read" on public.profiles;
 create policy "profiles_read" on public.profiles for select to authenticated
   using (id = auth.uid() or public.is_admin());
 
+-- بريد المدير: من يسجّل به يصبح مديراً تلقائياً (جدول خاص لا يقرؤه التطبيق)
+create table if not exists public.admin_emails (email text primary key);
+alter table public.admin_emails enable row level security;
+
 create or replace function public.handle_new_user() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
-  insert into public.profiles(id, email) values (new.id, new.email) on conflict (id) do nothing;
+  insert into public.profiles(id, email, role) values (new.id, new.email,
+    case when exists(select 1 from public.admin_emails a where lower(a.email) = lower(new.email)) then 'admin' else 'user' end)
+  on conflict (id) do nothing;
   return new;
 end $$;
 drop trigger if exists on_auth_user_created on auth.users;
