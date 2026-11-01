@@ -312,6 +312,19 @@ textarea{resize:vertical;min-height:64px}
 .paper td,.paper th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:start;white-space:nowrap}
 .paper th{color:var(--muted);font-weight:500;font-size:12px}
 .foot{font-size:12px;color:var(--muted);line-height:1.7;margin-top:6px}
+.enc-search{display:flex;gap:8px}
+.enc-search input{flex:1;min-width:0}
+.topics{display:flex;flex-wrap:wrap;gap:8px}
+.topics button{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:8px 14px;font-size:14px;color:var(--ink);text-align:start}
+.sym button small{display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px}
+.art h4{font:700 15px/1.4 var(--f-display);margin:4px 0 6px}
+.art ul{margin:0;padding-inline-start:20px;display:grid;gap:5px;font-size:14.5px;line-height:1.75}
+.art .triage ul{font-size:14px}
+.lead{font-size:15.5px;line-height:1.85;margin:0}
+.loading{display:grid;justify-items:center;gap:10px;padding:28px 0;text-align:center}
+.spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--accent-soft);border-top-color:var(--accent);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.msg .conf{display:inline-block;margin-top:4px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
@@ -748,7 +761,9 @@ const SYM=[
 ];
 function vDoctor(){
   return `<div class="stack">
-  <section class="panel ai-card" ${aiSample?'':'hidden'}><span class="aic">${ic('chat')}</span><div style="min-width:0"><h3>تحدّث مع طبيب الجيب</h3><p class="hint" style="margin-top:0">صف ما تشعر به بكلماتك. يسألك أسئلة متابعة، ويقرأ ملفك وقراءاتك الأخيرة، ثم يقترح مستوى الإلحاح وما يمكنك فعله.</p><button class="btn" type="button" data-act="chat" style="margin-top:8px">${ic('chat')}ابدأ المحادثة</button></div></section>
+  <section class="panel ai-card" ${aiSample?'':'hidden'}><span class="aic">${ic('chat')}</span><div style="min-width:0"><h3>اسأل طبيب الجيب عن أي شيء</h3><p class="hint" style="margin-top:0">أعراضك، أو تحليل لا تفهمه، أو دواء، أو كيف يعمل جسمك. يقرأ ملفك وقراءاتك الأخيرة، ويخبرك بدرجة ثقته في كل إجابة.</p><button class="btn" type="button" data-act="chat" style="margin-top:8px">${ic('chat')}ابدأ المحادثة</button></div></section>
+  ${aiSample?encHTML():''}
+  ${!IN_VIEWER?`<div class="banner info">${ic('info')}<div><b>الطبيب الذكي والموسوعة الطبية</b><p>يعملان عند فتح التطبيق من داخل Claude. باقي الأقسام تعمل هنا كاملة.</p></div></div>`:''}
   <h2 class="sec">بماذا تشعر؟<small>اختر العَرَض لتعرف هل تحتاج طبيباً</small></h2>
   <div class="sym">${SYM.map(s=>`<button type="button" data-act="sym" data-id="${s.id}">${s.n}</button>`).join('')}</div>
   <h2 class="sec">الصحة النفسية<small>استبيانان معتمدان عالمياً</small></h2>
@@ -1305,6 +1320,127 @@ function sheetSym(id){
   });
 }
 
+/* ---------- AI: shared ---------- */
+let aiTier='default';
+async function callAI(input,o,json){
+  const run=t=>json?aiSample.json(input,{...o,modelTier:t}):aiSample(input,{...o,modelTier:t});
+  try{return await run(aiTier)}catch(e){if(e&&e.code==='invalid_request'&&aiTier!=='default'){aiTier='default';return await run('default')}throw e}
+}
+function aiErr(e){const c=e&&e.code;return c==='not_granted'?'لم يُسمح باستخدام Claude لهذه الصفحة. يمكنك السماح من قائمة الأذونات ثم المحاولة مجدداً.':c==='rate_limited'?'طلبات كثيرة الآن. انتظر قليلاً ثم أعد المحاولة.':c==='invalid_json'?'جاء الرد ناقصاً. أعد المحاولة.':c==='cancelled'?'أُوقف الطلب.':'تعذّر الحصول على إجابة الآن. حاول مرة أخرى.'}
+
+/* ---------- medical encyclopedia (AI) ---------- */
+const SYSTEMS=[
+ ['القلب والأوعية الدموية',['ارتفاع ضغط الدم','الذبحة الصدرية','الجلطة القلبية','قصور القلب','الرجفان الأذيني','ارتفاع الكوليسترول','دوالي الساقين','الخثار الوريدي العميق']],
+ ['الجهاز التنفسي',['الربو','الانسداد الرئوي المزمن','الالتهاب الرئوي','الإنفلونزا','كوفيد-19','التهاب الشعب الهوائية','انقطاع التنفس أثناء النوم','السل']],
+ ['الجهاز الهضمي والكبد',['ارتجاع المريء','قرحة المعدة','جرثومة المعدة','القولون العصبي','التهاب الزائدة الدودية','حصى المرارة','الكبد الدهني','التهاب الكبد الوبائي','البواسير','الإمساك المزمن']],
+ ['السكري والغدد',['السكري النوع الأول','السكري النوع الثاني','مقدمات السكري','قصور الغدة الدرقية','فرط نشاط الغدة الدرقية','تكيس المبايض','نقص فيتامين د','السمنة']],
+ ['الكلى والمسالك البولية',['التهاب المسالك البولية','حصى الكلى','القصور الكلوي المزمن','تضخم البروستاتا','سلس البول']],
+ ['الدماغ والأعصاب',['الصداع النصفي','السكتة الدماغية','الصرع','مرض الزهايمر','مرض باركنسون','التصلب المتعدد','اعتلال الأعصاب السكري','الدوار']],
+ ['العظام والمفاصل',['هشاشة العظام','خشونة الركبة','التهاب المفاصل الروماتويدي','النقرس','الانزلاق الغضروفي','آلام أسفل الظهر','الألم العضلي الليفي']],
+ ['الجلد والشعر',['حب الشباب','الأكزيما','الصدفية','الشرى (الأرتيكاريا)','البهاق','الثعلبة','الفطريات الجلدية']],
+ ['العين',['قصر النظر','المياه البيضاء','المياه الزرقاء','اعتلال الشبكية السكري','جفاف العين','التهاب الملتحمة']],
+ ['الأنف والأذن والحنجرة',['التهاب الجيوب الأنفية','التهاب الأذن الوسطى','التهاب اللوزتين','حساسية الأنف','طنين الأذن','ضعف السمع']],
+ ['الدم والمناعة',['فقر الدم بنقص الحديد','الأنيميا المنجلية','الثلاسيميا','نقص فيتامين ب12','الذئبة الحمراء','الحساسية الغذائية']],
+ ['صحة المرأة والحمل',['سكري الحمل','تسمم الحمل','اضطراب الدورة الشهرية','انقطاع الطمث','بطانة الرحم المهاجرة','الرضاعة الطبيعية']],
+ ['صحة الأطفال',['الحمى عند الأطفال','الإسهال عند الأطفال','تطعيمات الأطفال','الحصبة','جدري الماء','فرط الحركة وتشتت الانتباه']],
+ ['الصحة النفسية',['الاكتئاب','اضطراب القلق العام','نوبات الهلع','الأرق','الوسواس القهري','اضطراب ما بعد الصدمة','الاحتراق الوظيفي']],
+ ['التحاليل والفحوصات',['صورة الدم الكاملة CBC','السكر التراكمي HbA1c','الكوليسترول والدهون الثلاثية','وظائف الكلى','وظائف الكبد','هرمون الغدة الدرقية TSH','تحليل فيتامين د','تحليل البول']],
+ ['كيف يعمل جسمك',['كيف يعمل القلب','كيف تعمل الرئتان','جهاز المناعة','الجهاز الهضمي','كيف تعمل الكلى','الدماغ والجهاز العصبي','الهرمونات','النوم وأهميته']]
+];
+const ART_KEY='pocket-clinic:articles';
+function artCache(){try{return JSON.parse(localStorage.getItem(ART_KEY)||'{}')||{}}catch(e){return {}}}
+function artPut(topic,a){try{const c=artCache();c[topic]={a,ts:Date.now()};Object.keys(c).sort((x,y)=>c[y].ts-c[x].ts).slice(40).forEach(k=>delete c[k]);localStorage.setItem(ART_KEY,JSON.stringify(c))}catch(e){}}
+function encHTML(){
+  const recent=Object.entries(artCache()).sort((a,b)=>b[1].ts-a[1].ts).slice(0,8);
+  return `<h2 class="sec">الموسوعة الطبية<small>أي مرض أو عضو أو تحليل أو دواء</small></h2>
+  <section class="panel" style="display:grid;gap:12px">
+    <form id="encF" class="enc-search" role="search"><input id="encQ" type="search" placeholder="مثال: الغدة الدرقية، تحليل فيتامين د، النقرس" aria-label="ابحث في الموسوعة الطبية" autocomplete="off" maxlength="120"><button class="btn" type="submit">ابحث</button></form>
+    ${recent.length?`<div><span class="lbl">قرأتها مؤخراً</span><div class="topics" style="margin-top:6px">${recent.map(([t])=>`<button type="button" data-act="enc" data-topic="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>`:`<p class="hint" style="margin:0">اكتب أي موضوع يخص جسمك أو صحتك، أو اختر من الأقسام بالأسفل. يُكتب كل مدخل بعد مراجعة دقيقة، ويمكنك طلب مراجعة ثانية لدقته.</p>`}
+  </section>
+  <div class="sym">${SYSTEMS.map((x,i)=>`<button type="button" data-act="sys" data-i="${i}">${x[0]}<small>${x[1].length} مواضيع</small></button>`).join('')}</div>`;
+}
+function sheetSys(i){const x=SYSTEMS[+i];if(!x)return;
+  openSheet(x[0],`<div class="topics">${x[1].map(t=>`<button type="button" data-act="enc" data-topic="${esc(t)}">${esc(t)}</button>`).join('')}</div><p class="hint">لا تجد ما تبحث عنه؟ اكتب أي موضوع في مربع البحث في صفحة «الطبيب».</p>`)}
+function artPrompt(topic){return `أنت مرجع طبي عربي دقيق يكتب لموسوعة صحية موجهة لعامة الناس. اكتب مدخلاً موسوعياً موجزاً عن: «${topic}».
+
+قواعد الدقة (إلزامية):
+- اعتمد فقط على المعرفة الطبية الراسخة والإرشادات السريرية الحالية المعتمدة (مثل منظمة الصحة العالمية، ومراكز مكافحة الأمراض CDC، وNICE، والجمعيات الطبية المتخصصة).
+- لا تخترع أرقاماً أو نسباً أو دراسات أو روابط أو عناوين مراجع محددة. إذا لم تكن متأكداً من معلومة فاحذفها، واذكر نقاط الخلاف أو عدم اليقين في حقل uncertain.
+- لا تذكر جرعات أدوية تحتاج وصفة طبية؛ اذكر فئات العلاج وأسماءها العلمية العامة فقط.
+- القيم المرجعية للتحاليل اذكرها نطاقات تقريبية شائعة للبالغين مع التنبيه لاختلافها بين المختبرات.
+- اكتب بعربية فصحى مبسطة يفهمها غير المتخصص. كل نقطة جملة واحدة واضحة ودقيقة.
+- confidence تعني مدى رسوخ المعلومات المكتوبة علمياً: high إذا كانت كلها متفقاً عليها، medium إذا وُجد خلاف أو أدلة محدودة في بعضها، low إذا كان الموضوع غير محسوم علمياً.
+- إذا لم يكن الموضوع متعلقاً بالصحة أو جسم الإنسان فأعد {"kind":"off_topic"} فقط.
+
+الأقسام حسب نوع الموضوع:
+- مرض أو حالة: ما هو، الأعراض، الأسباب وعوامل الخطر، التشخيص، العلاج، الوقاية، المضاعفات.
+- عَرَض: الأسباب الشائعة، الأسباب الخطيرة، ما يمكنك فعله في المنزل، متى تراجع الطبيب.
+- تحليل أو فحص: ماذا يقيس، القيم المعتادة، أسباب الارتفاع، أسباب الانخفاض، التحضير للفحص.
+- دواء: فيمَ يُستخدم، كيف يعمل، الآثار الجانبية الشائعة، تحذيرات وتداخلات مهمة.
+- عضو أو وظيفة في الجسم: التركيب، كيف يعمل، ما يحافظ على صحته، أمراضه الشائعة.
+اكتب من 3 إلى 6 نقاط في كل قسم.
+
+بيانات المستخدم (استخدمها فقط في حقل personal إن كانت ذات صلة مباشرة بالموضوع، وإلا اتركه نصاً فارغاً):
+${aiContext()}
+
+أعد كائن JSON واحداً فقط بهذا الشكل:
+{"title":"الاسم العربي","en":"English name","kind":"disease|symptom|test|drug|organ|other","summary":"2-3 جمل تعريفية","sections":[{"h":"عنوان القسم","points":["..."]}],"urgent":["علامات تستدعي الطوارئ فوراً، أو مصفوفة فارغة"],"personal":"","uncertain":"","confidence":"high|medium|low","refs":["أسماء جهات أو إرشادات عامة معروفة فقط"]}`}
+function verPrompt(topic,a){return `أنت طبيب مراجع صارم. راجع هذا المدخل الموسوعي الطبي عن «${topic}» بحثاً عن: أخطاء علمية، أو معلومات قديمة تخالف الإرشادات الحالية، أو أرقام مشكوك فيها، أو نصائح قد تكون خطيرة، أو علامات طوارئ مهمة ناقصة. لا تعلّق على الأسلوب أو الصياغة.
+أعد كائن JSON واحداً فقط: {"verdict":"accurate|minor|major","summary":"جملة واحدة بالعربية","issues":[{"claim":"النص المعني باختصار","fix":"التصحيح الدقيق بالعربية"}]}
+المدخل:
+${JSON.stringify({summary:a.summary,sections:a.sections,urgent:a.urgent})}`}
+function cleanArt(a){
+  if(!a||typeof a!=='object')return null;
+  const str=x=>typeof x==='string'?x.trim():'',arr=x=>Array.isArray(x)?x.map(str).filter(Boolean):[];
+  const o={title:str(a.title),en:str(a.en),kind:str(a.kind),summary:str(a.summary),personal:str(a.personal),uncertain:str(a.uncertain),
+    confidence:['high','medium','low'].includes(a.confidence)?a.confidence:'medium',urgent:arr(a.urgent),refs:arr(a.refs),
+    sections:(Array.isArray(a.sections)?a.sections:[]).map(x=>({h:str(x&&x.h),points:arr(x&&x.points)})).filter(x=>x.h&&x.points.length)};
+  if(o.kind!=='off_topic'&&!o.summary&&!o.sections.length)return null;return o;
+}
+function verHTML(v){if(!v)return '';const m={accurate:['ok','اجتاز المراجعة الثانية','لم يجد المراجع أخطاء علمية جوهرية.'],minor:['warn','ملاحظات بسيطة','وجد المراجع نقاطاً تحتاج دقة أكثر:'],major:['bad','تصحيحات مهمة','وجد المراجع أخطاء مهمة؛ اعتمد على التصحيحات أدناه واستشر طبيبك:']}[v.v]||['warn','ملاحظات',''];
+  return `<div class="result ${m[0]}"><div class="r-top"><span class="chip ${m[0]}">${m[1]}</span></div><p>${m[2]} ${esc(v.summary||'')}</p>${v.issues&&v.issues.length?`<ul style="margin:4px 0 0;padding-inline-start:20px;font-size:14px;display:grid;gap:6px">${v.issues.map(i=>`<li><b>${esc(i.claim)}</b><br>${esc(i.fix||'')}</li>`).join('')}</ul>`:''}<p class="small muted">المراجعة الثانية تقلل الأخطاء ولا تلغيها تماماً.</p></div>`}
+function renderArt(body,topic,a){
+  if(a.kind==='off_topic'){body.innerHTML=`<div class="banner info">${ic('info')}<div><b>الموضوع خارج نطاق الموسوعة</b><p>جرّب اسم مرض أو عضو أو عَرَض أو تحليل أو دواء.</p></div></div>`;return}
+  const CF={high:['ok','معلومات راسخة علمياً'],medium:['warn','بعضها غير محسوم علمياً'],low:['bad','موضوع غير محسوم علمياً']}[a.confidence];
+  body.innerHTML=`<article class="art sheet-b">
+    <div class="row"><span class="chip ${CF[0]}">${CF[1]}</span>${a.en?`<span class="small muted" dir="ltr">${esc(a.en)}</span>`:''}</div>
+    ${a.summary?`<p class="lead">${esc(a.summary)}</p>`:''}
+    ${a.personal?`<div class="banner info">${ic('user')}<div><b>بالنسبة لك</b><p>${esc(a.personal)}</p></div></div>`:''}
+    ${a.urgent.length?`<div class="triage bad"><h3 style="font-size:16px">اتصل بالإسعاف (<bdi>${esc(emNum())}</bdi>) فوراً إذا ظهر:</h3><ul style="margin:0;padding-inline-start:20px;display:grid;gap:4px">${a.urgent.map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>`:''}
+    ${a.sections.map(x=>`<section><h4>${esc(x.h)}</h4><ul>${x.points.map(q=>`<li>${esc(q)}</li>`).join('')}</ul></section>`).join('')}
+    ${a.uncertain?`<p class="hint" style="margin:0"><b>ما زال غير محسوم أو مختلفاً عليه:</b> ${esc(a.uncertain)}</p>`:''}
+    ${a.refs.length?`<p class="foot" style="margin:0">مبني على المعرفة الطبية المعتمدة لدى: ${a.refs.map(esc).join('، ')}. هذه أسماء جهات مرجعية عامة وليست روابط لمصادر محددة.</p>`:''}
+    <div id="verOut">${verHTML(a.ver)}</div>
+    <div class="row"><button class="btn" type="button" id="artAsk">${ic('chat')}اسأل سؤال متابعة</button>${a.ver?'':`<button class="btn ghost" type="button" id="artVer">${ic('check')}مراجعة ثانية للدقة</button>`}<button class="btn ghost" type="button" id="artRe">أعد الكتابة</button></div>
+    <p class="foot" style="margin:0">معلومات تثقيفية عامة كتبها نموذج ذكاء اصطناعي، وقد تحتوي أخطاء. لا تغني عن الطبيب، ولا تبدأ دواءً أو توقفه بناءً عليها.</p>
+  </article>`;
+  $('#artAsk',body).onclick=()=>sheetChat(null,`بخصوص «${topic}»: `);
+  $('#artRe',body).onclick=()=>sheetArticle(topic,true);
+  const vb=$('#artVer',body);
+  if(vb)vb.onclick=async()=>{vb.disabled=true;const out=$('#verOut',body);out.innerHTML=`<div class="loading" style="padding:12px 0"><div class="spin"></div><span class="hint" style="margin:0">مراجع ثانٍ يدقق المعلومات… قد يستغرق ذلك دقيقة.</span></div>`;
+    try{const r=await callAI(verPrompt(topic,a),{},true);const v={v:['accurate','minor','major'].includes(r&&r.verdict)?r.verdict:'minor',summary:typeof r.summary==='string'?r.summary:'',issues:(Array.isArray(r&&r.issues)?r.issues:[]).filter(i=>i&&typeof i.claim==='string').map(i=>({claim:i.claim,fix:typeof i.fix==='string'?i.fix:''}))};
+      a.ver=v;artPut(topic,a);out.innerHTML=verHTML(v);vb.remove()}
+    catch(e){out.innerHTML=`<p class="err">${esc(aiErr(e))}</p>`;vb.disabled=false}};
+}
+function sheetArticle(topic,force){
+  topic=String(topic||'').replace(/\s+/g,' ').trim().slice(0,120);if(!topic)return;
+  if(!aiSample){toast('الموسوعة تعمل عند فتح التطبيق من داخل Claude');return}
+  const cached=!force&&artCache()[topic];
+  openSheet(topic,`<div id="artBody"></div>`,b=>{
+    const body=$('#artBody',b);
+    if(cached){renderArt(body,topic,cached.a);artPut(topic,cached.a);return}
+    let live=true;const t0=Date.now(),ctl=new AbortController();
+    body.innerHTML=`<div class="loading"><div class="spin"></div><b>يُكتب مدخل «${esc(topic)}»</b><span class="hint" id="artT" style="margin:0">يراجع المعلومات بعناية قبل الكتابة، وقد يستغرق ذلك حتى دقيقة.</span><button class="btn ghost sm" type="button" id="artStop">إيقاف</button></div>`;
+    const iv=setInterval(()=>{const el=$('#artT',b);if(el)el.textContent='يفكّر بعمق قبل الكتابة… '+Math.round((Date.now()-t0)/1000)+' ث'},1000);
+    $('#artStop',b).onclick=()=>ctl.abort();
+    callAI(artPrompt(topic),{signal:ctl.signal},true).then(r=>{clearInterval(iv);if(!live)return;const a=cleanArt(r);
+        if(!a){body.innerHTML=`<p class="err">جاء الرد ناقصاً. أعد المحاولة.</p><button class="btn" type="button" id="artAgain">أعد المحاولة</button>`;$('#artAgain',body).onclick=()=>sheetArticle(topic,true);return}
+        if(a.kind!=='off_topic')artPut(topic,a);renderArt(body,topic,a)})
+      .catch(e=>{clearInterval(iv);if(!live)return;body.innerHTML=`<div class="banner warn">${ic('alert')}<div><b>لم يكتمل المدخل</b><p>${esc(aiErr(e))}</p></div></div><button class="btn" type="button" id="artAgain">أعد المحاولة</button>`;$('#artAgain',body).onclick=()=>sheetArticle(topic,true)});
+    return()=>{live=false;clearInterval(iv);ctl.abort()};
+  });
+}
+
 /* ---------- AI doctor chat ---------- */
 const chat={turns:[]};
 function aiContext(){
@@ -1316,28 +1452,36 @@ function aiContext(){
   for(const k of ['bp','hr','spo2','temp','glu','wt','rr','phq','gad']){const r=last(k);if(r){const M=MET[k];lines.push(`${M.n}: ${M.val(r.v)} ${unitOf(k)}${M.sub?' '+M.sub(r.v):''} (${M.cls(r.v).t}) بتاريخ ${fD.format(r.ts)}`)}}
   return lines.join('\n');
 }
-function rules(){return `أنت «طبيب الجيب»، مساعد صحي داخل تطبيق «عيادة الجيب». تحدّث بعربية فصحى بسيطة ودافئة.
-مهمتك: فهم ما يشعر به المستخدم بأسئلة متابعة قصيرة (سؤال أو سؤالان في كل رد على الأكثر حتى تتضح الصورة)، ثم شرح الأسباب الشائعة المحتملة بلغة بسيطة، وتحديد مستوى الإلحاح بوضوح في سطر مستقل بإحدى العبارات: «طوارئ الآن» أو «طبيب اليوم» أو «موعد خلال أيام» أو «رعاية منزلية»، مع خطوات عملية.
-إذا ظهرت أي علامة خطر فابدأ ردك بها واطلب الاتصال بالإسعاف على الرقم ${emNum()} فوراً.
-لا تقدّم تشخيصاً نهائياً، ولا تصف أدوية تحتاج وصفة طبية أو جرعاتها. يمكنك ذكر أدوية شائعة متاحة دون وصفة بشكل عام مع التنبيه لقراءة النشرة ومراعاة الحساسية والأمراض المزمنة المذكورة.
-استخدم بيانات المستخدم أدناه حين تكون ذات صلة. اجعل ردك أقل من 150 كلمة، ونظّمه بنقاط قصيرة. لا تستخدم الجداول.
-إذا ذكر المستخدم أفكاراً لإيذاء نفسه فتعامل بلطف، وشجّعه على التواصل الفوري مع شخص يثق به أو مع الطوارئ (${emNum()}).
+function rules(){return `أنت «طبيب الجيب»، مساعد طبي داخل تطبيق «عيادة الجيب». تحدّث بعربية فصحى بسيطة ودافئة.
+تجيب عن أي سؤال يخص جسم الإنسان والأمراض والأعراض والتحاليل والأدوية (معلومات عامة) والتغذية والنوم واللياقة والصحة النفسية.
 
-بيانات المستخدم من التطبيق:
+قواعد الدقة (إلزامية):
+- اعتمد على المعرفة الطبية الراسخة والإرشادات السريرية الحالية المعتمدة. لا تخترع أرقاماً أو دراسات أو مراجع. إذا لم تكن متأكداً فقل ذلك صراحة، وإذا اختلفت الإرشادات فاذكر ذلك.
+- لا تقدّم تشخيصاً نهائياً، ولا تصف أدوية تحتاج وصفة طبية أو جرعاتها. يمكنك ذكر أدوية شائعة متاحة دون وصفة بشكل عام مع التنبيه لقراءة النشرة ومراعاة الحساسية والأمراض المزمنة المذكورة.
+- عند تفسير التحاليل اذكر أن القيم المرجعية تختلف بين المختبرات وأن التفسير النهائي للطبيب.
+
+عند وصف أعراض: اسأل سؤال متابعة أو اثنين حتى تتضح الصورة، ثم اذكر الأسباب الشائعة المحتملة ومستوى الإلحاح في سطر مستقل بإحدى العبارات: «طوارئ الآن» أو «طبيب اليوم» أو «موعد خلال أيام» أو «رعاية منزلية».
+إذا ظهرت أي علامة خطر فابدأ ردك بها واطلب الاتصال بالإسعاف على الرقم ${emNum()} فوراً.
+إذا ذكر المستخدم أفكاراً لإيذاء نفسه فتعامل بلطف وشجّعه على التواصل الفوري مع شخص يثق به أو مع الطوارئ (${emNum()}).
+
+الشكل: نقاط قصيرة، أقل من 180 كلمة ما لم يطلب المستخدم تفصيلاً، بلا جداول. اختم كل إجابة تحتوي معلومات طبية بسطر مستقل: «درجة الثقة: عالية» أو «درجة الثقة: متوسطة» أو «درجة الثقة: منخفضة» حسب رسوخ المعلومة علمياً.
+
+بيانات المستخدم من التطبيق (استخدمها حين تكون ذات صلة):
 ${aiContext()}`}
-function sheetChat(prefill){
+function chatMD(t){return mdLite(t).replace(/<p>\s*درجة الثقة\s*[:：]\s*(عالية|متوسطة|منخفضة)[.\s]*<\/p>/,(m,l)=>`<span class="chip conf ${l==='عالية'?'ok':l==='متوسطة'?'warn':'bad'}">درجة الثقة: ${l}</span>`)}
+function sheetChat(prefill,draft){
   if(!aiSample){toast('المساعد الذكي غير متاح هنا');return}
   openSheet('طبيب الجيب',`<p class="hint" style="margin:0">مساعد ذكي للإرشاد العام، لا يغني عن الطبيب. في الطوارئ اتصل بـ<bdi>${esc(emNum())}</bdi>.</p>
   <div class="chat" id="chLog"></div>
-  <div class="sugg" id="chSug">${['عندي صداع منذ يومين مع غثيان','ماذا تعني قراءات ضغطي الأخيرة؟','أشعر بتعب مستمر، ما الأسباب؟','كيف أحسّن نومي؟'].map(t=>`<button type="button" data-s="${esc(t)}">${t}</button>`).join('')}</div>
+  <div class="sugg" id="chSug">${['عندي صداع منذ يومين مع غثيان','كيف أفهم نتيجة تحليل الدم الشامل؟','ما الفرق بين السكري الأول والثاني؟','ماذا تعني قراءات ضغطي الأخيرة؟','كيف أحسّن نومي؟'].map(t=>`<button type="button" data-s="${esc(t)}">${t}</button>`).join('')}</div>
   <form class="chat-f" id="chF"><textarea id="chIn" rows="2" placeholder="صف ما تشعر به…" aria-label="رسالتك"></textarea><button class="btn" type="submit" id="chSend">إرسال</button><button class="btn ghost" type="button" id="chStop" hidden>إيقاف</button></form>`,b=>{
     const log=$('#chLog',b),inp=$('#chIn',b),send=$('#chSend',b),stop=$('#chStop',b),sug=$('#chSug',b);let ctl=null,busy=false;
-    function draw(){log.innerHTML=chat.turns.map(t=>`<div class="msg ${t.role==='user'?'u':'a'}">${t.role==='user'?esc(t.content).replace(/\n/g,'<br>'):mdLite(t.content)}</div>`).join('');sug.hidden=chat.turns.length>0}
+    function draw(){log.innerHTML=chat.turns.map(t=>`<div class="msg ${t.role==='user'?'u':'a'}">${t.role==='user'?esc(t.content).replace(/\n/g,'<br>'):chatMD(t.content)}</div>`).join('');sug.hidden=chat.turns.length>0}
     async function ask(text){
       if(busy||!text.trim())return;busy=true;chat.turns.push({role:'user',content:text.trim()});draw();inp.value='';
-      const bub=document.createElement('div');bub.className='msg a';bub.textContent='يفكّر…';log.append(bub);bub.scrollIntoView({block:'end'});
+      const bub=document.createElement('div');bub.className='msg a';bub.textContent='يفكّر بعمق قبل الإجابة…';log.append(bub);bub.scrollIntoView({block:'end'});
       send.hidden=true;stop.hidden=false;ctl=new AbortController();
-      try{const r=await aiSample([{role:'user',content:rules()},{role:'assistant',content:'فهمت. سأتبع هذه التعليمات.'},...chat.turns],{cache:false,signal:ctl.signal,onText:({text})=>{bub.innerHTML=mdLite(text)}});
+      try{const r=await callAI([{role:'user',content:rules()},{role:'assistant',content:'فهمت. سأتبع هذه التعليمات.'},...chat.turns],{cache:false,signal:ctl.signal,onText:({text})=>{bub.innerHTML=chatMD(text)}});
         chat.turns.push({role:'assistant',content:r.text});}
       catch(e){const code=e&&e.code;if(e&&e.text){chat.turns.push({role:'assistant',content:e.text})}
         else{chat.turns.pop();}
@@ -1347,7 +1491,7 @@ function sheetChat(prefill){
     $('#chF',b).onsubmit=e=>{e.preventDefault();ask(inp.value)};
     inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask(inp.value)}});
     stop.onclick=()=>ctl&&ctl.abort();sug.onclick=e=>{const t=e.target.closest('button');if(t)ask(t.dataset.s)};
-    draw();if(prefill)ask(prefill);else setTimeout(()=>inp.focus(),150);
+    draw();if(prefill)ask(prefill);else{if(draft){inp.value=draft}setTimeout(()=>{inp.focus();try{inp.setSelectionRange(inp.value.length,inp.value.length)}catch(e){}},150)}
     return()=>{ctl&&ctl.abort()};
   });
 }
@@ -1397,7 +1541,7 @@ const ACT={
   vital:a=>{const k=a.dataset.k;if(last(k)){logK=k;go('log')}else sheetAdd(k)},
   add:a=>sheetAdd(a.dataset.k),addPick:()=>sheetAddPick(),
   test:a=>{const t=OPEN_TEST[a.dataset.t];if(t)openSheet(t[0],'',t[1])},
-  sym:a=>sheetSym(a.dataset.id),q:a=>sheetQ(a.dataset.q),chat:()=>sheetChat(),sos:()=>sheetSOS(),report:()=>sheetReport(),calib:()=>sheetCalib(),
+  sym:a=>sheetSym(a.dataset.id),sys:a=>sheetSys(a.dataset.i),enc:a=>sheetArticle(a.dataset.topic),q:a=>sheetQ(a.dataset.q),chat:()=>sheetChat(),sos:()=>sheetSOS(),report:()=>sheetReport(),calib:()=>sheetCalib(),
   logk:a=>{logK=a.dataset.k;if(view==='log')render();else go('log')},
   copy:a=>copyText(a.dataset.txt),
   water:a=>{ensureReal();const k=dayKey(),before=S.water[k]||0;S.water[k]=Math.max(0,before+(+a.dataset.ml));persist();render();if(before<waterGoal()&&S.water[k]>=waterGoal())toast('أحسنت! وصلت إلى هدف الماء اليوم')},
@@ -1429,6 +1573,7 @@ document.addEventListener('change',e=>{
   const nm=P().name?P().name.split(' ')[0]:'';$('#hello').textContent=(nm?'أهلاً '+nm+' · ':'')+fLong.format(new Date());
 });
 document.addEventListener('submit',e=>{
+  if(e.target.id==='encF'){e.preventDefault();const q=$('#encQ').value.trim();if(q)sheetArticle(q);return}
   if(e.target.id!=='medForm')return;e.preventDefault();const name=$('#m-name').value.trim();if(!name){$('#m-name').focus();return}
   const times=['m-t1','m-t2','m-t3'].map(i=>$('#'+i).value).filter(Boolean);if(!times.length)return;
   ensureReal();S.meds.push({id:uid(),name,dose:$('#m-dose').value.trim(),times:[...new Set(times)].sort(),on:true});persist();render();toast('أُضيف '+name);
@@ -1450,7 +1595,7 @@ setInterval(()=>{
 view=VIEWS[location.hash.slice(1)]?location.hash.slice(1):'home';
 render();
 connectRemote();
-if(IN_VIEWER){claude.use('sample').then(s=>{if(s){aiSample=s;if($('#sheetBg').hidden)render()}}).catch(()=>{})}
+if(IN_VIEWER){claude.use('sample').then(async s=>{if(!s)return;aiSample=s;try{const l=await s.limits();const t=l&&l.modelTiers;aiTier=(!t||t.includes('complex'))?'complex':'default'}catch(e){}if($('#sheetBg').hidden)render()}).catch(()=>{})}
 if(!IN_VIEWER&&'serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 })();
 </script>
