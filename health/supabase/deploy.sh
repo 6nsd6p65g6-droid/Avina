@@ -35,7 +35,7 @@ fi
 if [ -n "${ADMIN_EMAIL:-}" ]; then
   if [[ ! "$ADMIN_EMAIL" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+$ ]]; then echo "بريد المدير غير صالح"; exit 1; fi
   echo "5/5 تعيين المدير $ADMIN_EMAIL…"
-  "${CLI[@]}" db query --project-ref "$REF" "update public.profiles set role='admin' where lower(email)=lower('$ADMIN_EMAIL') returning email"
+  "${CLI[@]}" db query --project-ref "$REF" "insert into public.admin_emails(email) values (lower('$ADMIN_EMAIL')) on conflict do nothing; update public.profiles set role='admin' where lower(email)=lower('$ADMIN_EMAIL');"
 else
   echo "5/5 تخطّي تعيين المدير (ADMIN_EMAIL غير موجود)"
 fi
