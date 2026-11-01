@@ -1546,8 +1546,8 @@ function sheetReport(){
 }
 
 /* ---------- cloud: Supabase (login, sync, AI server, plans, payments) ---------- */
-const SUPA_URL='';   // ← عنوان مشروع Supabase، مثل: https://abcdefgh.supabase.co
-const SUPA_KEY='sb_publishable_17dzfHpHrzZ-bF4U6pPIZw_tw64GvTf';
+const SUPA_URL='https://ifpduyrdexsbpyvcjjxz.supabase.co';   // عنوان مشروع Supabase
+const SUPA_KEY='sb_publishable_IzbQkTyrgzwdhAXJ4ugHLA_BjxnO7HQ';   // المفتاح العام (آمن داخل التطبيق)
 const CLOUD=!IN_VIEWER&&/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(SUPA_URL)&&!!SUPA_KEY;
 const cloud={sb:null,session:null,status:null,plans:[],settings:{},ready:false,failed:false,pushT:0,pushing:false,pushAgain:false};
 const aiVisible=()=>!!aiSample||CLOUD;
