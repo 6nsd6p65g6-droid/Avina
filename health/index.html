@@ -405,9 +405,9 @@ const IP={
 const ic=(n,cls='')=>`<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IP[n]||''}"/></svg>`;
 
 /* ---------- data ---------- */
-const COUNTRIES=[['SA','السعودية','997'],['AE','الإمارات','998'],['KW','الكويت','112'],['QA','قطر','999'],['BH','البحرين','999'],['OM','عُمان','9999'],['EG','مصر','123'],['JO','الأردن','911'],['IQ','العراق','122'],['LB','لبنان','140'],['MA','المغرب','15'],['DZ','الجزائر','14'],['TN','تونس','190'],['XX','دولة أخرى','112']];
+const COUNTRIES=[['LY','ليبيا','1515'],['SA','السعودية','997'],['AE','الإمارات','998'],['KW','الكويت','112'],['QA','قطر','999'],['BH','البحرين','999'],['OM','عُمان','9999'],['EG','مصر','123'],['JO','الأردن','911'],['IQ','العراق','122'],['LB','لبنان','140'],['MA','المغرب','15'],['DZ','الجزائر','14'],['TN','تونس','190'],['XX','دولة أخرى','112']];
 const KEY='pocket-clinic:v1';
-function blankState(){return{v:1,updated:0,demo:false,profile:{name:'',sex:'',birthYear:'',height:'',weight:'',blood:'',conditions:'',allergies:'',contactName:'',contactPhone:'',country:'SA',emNum:'997',gluUnit:'mg',activity:'1.375',waist:'',neck:'',hip:'',pxmm:0},readings:[],meds:[],medLog:{},water:{}}}
+function blankState(){return{v:1,updated:0,demo:false,profile:{name:'',sex:'',birthYear:'',height:'',weight:'',blood:'',conditions:'',allergies:'',contactName:'',contactPhone:'',country:'LY',emNum:'1515',gluUnit:'mg',activity:'1.375',waist:'',neck:'',hip:'',pxmm:0},readings:[],meds:[],medLog:{},water:{}}}
 function demoState(){
   const s=blankState();s.demo=true;
   Object.assign(s.profile,{name:'سارة (مثال)',sex:'f',birthYear:'1988',height:'165',weight:'68',blood:'A+',conditions:'لا يوجد',allergies:'البنسلين',contactName:'أحمد',contactPhone:'0500000000',waist:'78',neck:'33',hip:'98'});
