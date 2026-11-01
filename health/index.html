@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a6a6e">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head><body>
+<!--APP:START-->
+<title>عيادة الجيب</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: a dark bedside-monitor panel opens Home; clinical panels stack in one column below; a fixed tab bar sits at the bottom. */
+:root{
+  --bg:#edf2f1;--surface:#ffffff;--surface-2:#f4f8f7;--ink:#10302e;--muted:#557170;--line:#d3e0dd;
+  --accent:#0a6a6e;--accent-ink:#ffffff;--accent-soft:#d6ebeb;
+  --pulse:#cf3653;--pulse-grid:rgba(207,54,83,.10);
+  --ok:#1b7a44;--ok-soft:#dcf0e2;--warn:#8f5400;--warn-soft:#fbebd0;--bad:#bb2232;--bad-soft:#f8dadd;--on-bad:#ffffff;--info:#2c5ba5;--info-soft:#dfe8f7;
+  --mon:#0e2523;--mon-2:#13302d;--mon-ink:#e0f5f0;--mon-dim:#8bb4ad;--mon-line:#3fd6b2;--mon-grid:rgba(63,214,178,.075);
+  --mon-ok:#3fd6b2;--mon-warn:#f2b45a;--mon-bad:#ff6b7a;
+  --shadow:0 1px 2px rgba(16,48,46,.05),0 8px 22px rgba(16,48,46,.06);
+  --scrim:rgba(4,18,17,.5);
+  --f-display:"Alexandria","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --f-body:"IBM Plex Sans Arabic","Segoe UI",Tahoma,Arial,sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0a1514;--surface:#11201f;--surface-2:#162826;--ink:#e2efec;--muted:#8ea9a5;--line:#24403c;
+  --accent:#4cc3bd;--accent-ink:#04201f;--accent-soft:#143836;
+  --pulse:#ff6e86;--pulse-grid:rgba(255,110,134,.10);
+  --ok:#5fd08d;--ok-soft:#14321f;--warn:#f2b45a;--warn-soft:#382a10;--bad:#ff7d86;--bad-soft:#3d191c;--on-bad:#2a0508;--info:#8ab0f2;--info-soft:#18284a;
+  --mon:#071211;--mon-2:#0d1e1c;--shadow:none;--scrim:rgba(0,0,0,.6);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0a1514;--surface:#11201f;--surface-2:#162826;--ink:#e2efec;--muted:#8ea9a5;--line:#24403c;
+  --accent:#4cc3bd;--accent-ink:#04201f;--accent-soft:#143836;
+  --pulse:#ff6e86;--pulse-grid:rgba(255,110,134,.10);
+  --ok:#5fd08d;--ok-soft:#14321f;--warn:#f2b45a;--warn-soft:#382a10;--bad:#ff7d86;--bad-soft:#3d191c;--on-bad:#2a0508;--info:#8ab0f2;--info-soft:#18284a;
+  --mon:#071211;--mon-2:#0d1e1c;--shadow:none;--scrim:rgba(0,0,0,.6);color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+.eyebrow{font-size:12px;color:var(--muted)}
+.ai-card{display:flex;gap:14px;align-items:flex-start}
+.aic{width:44px;height:44px;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.aic svg{width:24px;height:24px}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.7 var(--f-body);-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+bdi,.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.wrap{max-width:720px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{padding-block:12px 6px}
+.top-row{display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand svg{width:40px;height:40px;flex:none}
+.brand b{font:700 18px/1.25 var(--f-display);display:block}
+.brand small{color:var(--muted);font-size:12.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sos{margin-inline-start:auto;flex:none;background:var(--bad);color:var(--on-bad);border:0;border-radius:999px;padding:8px 14px;font:700 14px/1 var(--f-display);display:inline-flex;gap:6px;align-items:center}
+.sos svg{width:18px;height:18px}
+main{padding-block:6px calc(104px + env(safe-area-inset-bottom,0px))}
+.stack{display:grid;gap:14px}
+.sec{font:700 16px/1.4 var(--f-display);margin:12px 0 -2px;text-wrap:balance}
+.sec small{font:400 12.5px var(--f-body);color:var(--muted);margin-inline-start:6px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow);min-width:0}
+.panel h3{font:700 15px/1.4 var(--f-display);margin:0 0 8px}
+.muted{color:var(--muted)}.small{font-size:13px}
+.hint{font-size:13px;color:var(--muted);margin:6px 0 0;line-height:1.65}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.between{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.grid2{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+/* monitor */
+.monitor{background-color:var(--mon);color:var(--mon-ink);border-radius:22px;padding:14px;position:relative;overflow:hidden;
+  background-image:linear-gradient(var(--mon-grid) 1px,transparent 1px),linear-gradient(90deg,var(--mon-grid) 1px,transparent 1px);background-size:13px 13px}
+.mon-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--mon-dim)}
+.mon-head b{font:600 13px var(--f-display);color:var(--mon-ink)}
+.live{display:inline-flex;align-items:center;gap:6px}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--mon-line);box-shadow:0 0 0 3px rgba(63,214,178,.18);animation:blink var(--beat,1s) ease-out infinite}
+@keyframes blink{0%{opacity:1}60%{opacity:.25}100%{opacity:1}}
+.ecg{display:block;width:100%;height:46px;margin:4px 0 10px}
+.ecg .base{fill:none;stroke:var(--mon-line);stroke-opacity:.22;stroke-width:1.4;stroke-linejoin:round}
+.ecg .sweep{fill:none;stroke:var(--mon-line);stroke-width:1.9;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:14 86;animation:sweep var(--sweep,5s) linear infinite}
+@keyframes sweep{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+.vitals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.vital{background:var(--mon-2);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:9px 10px 8px;text-align:start;color:inherit;display:grid;gap:1px;min-width:0}
+.vital:hover{border-color:rgba(63,214,178,.35)}
+.vital .lb{font-size:11.5px;color:var(--mon-dim);display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden}
+.vital .val{font:600 21px/1.25 var(--f-num);color:var(--mon-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vital .un{font-size:11px;color:var(--mon-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--mon-dim);opacity:.6}
+.dot.ok{background:var(--mon-ok);opacity:1}.dot.warn{background:var(--mon-warn);opacity:1}.dot.bad{background:var(--mon-bad);opacity:1}.dot.info{background:#8ab0f2;opacity:1}
+@media (max-width:360px){.vital .val{font-size:18px}}
+/* chips */
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:1px 10px;font-size:12.5px;font-weight:600;white-space:nowrap;background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.chip.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.chip.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.chip.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.chip.info{background:var(--info-soft);color:var(--info);border-color:transparent}
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;border-radius:12px;padding:10px 16px;font:600 15px/1.25 var(--f-body);background:var(--accent);color:var(--accent-ink);text-decoration:none}
+.btn svg{width:18px;height:18px;flex:none}
+.btn.ghost{background:transparent;color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.btn.soft{background:var(--accent-soft);color:var(--accent)}
+.btn.danger{background:var(--bad);color:var(--on-bad)}
+.btn.sm{padding:6px 12px;font-size:13.5px;border-radius:10px}
+.btn.block{width:100%}
+.btn:disabled{opacity:.45;cursor:default}
+.linkish{background:none;border:0;color:var(--accent);font-weight:600;padding:0}
+/* quick actions */
+.hero-act{display:flex;align-items:center;gap:14px;width:100%;text-align:start;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 16px;box-shadow:var(--shadow);color:var(--ink)}
+.hero-act .hic{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;flex:none;background:var(--pulse-grid);color:var(--pulse)}
+.hero-act .hic svg{width:28px;height:28px}
+.hero-act b{font:700 16px/1.35 var(--f-display);display:block}
+.hero-act span{font-size:13px;color:var(--muted)}
+.hero-act .go{margin-inline-start:auto;color:var(--muted)}
+.quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.qa{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 8px;display:grid;justify-items:center;gap:6px;text-align:center;font-size:13px;font-weight:600;color:var(--ink);box-shadow:var(--shadow)}
+.qa svg{width:24px;height:24px;color:var(--accent)}
+/* tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,152px),1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;text-align:start;display:flex;flex-direction:column;gap:5px;color:var(--ink);box-shadow:var(--shadow);min-width:0}
+.tile .ic{width:36px;height:36px;border-radius:11px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.tile .ic svg{width:21px;height:21px}
+.tile .ic.p{background:var(--pulse-grid);color:var(--pulse)}
+.tile b{font:600 14.5px/1.35 var(--f-display)}
+.tile .d{font-size:12.3px;color:var(--muted);line-height:1.55}
+.tile .ft{margin-top:auto;padding-top:4px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:11.5px;color:var(--muted)}
+.need{font-size:11px;border:1px dashed var(--line);border-radius:999px;padding:0 8px;color:var(--muted)}
+/* banners */
+.banner{border-radius:16px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start}
+.banner svg{width:22px;height:22px;flex:none;margin-top:2px}
+.banner.info{background:var(--info-soft);color:var(--ink)}.banner.info svg{color:var(--info)}
+.banner.bad{background:var(--bad-soft)}.banner.bad svg{color:var(--bad)}
+.banner.warn{background:var(--warn-soft)}.banner.warn svg{color:var(--warn)}
+.banner p{margin:2px 0 0;font-size:13.5px}
+.banner b{font-family:var(--f-display);font-weight:700}
+/* water + meds */
+.water{display:flex;gap:16px;align-items:center}
+.ring{width:92px;height:92px;flex:none}
+.ring .tr{fill:none;stroke:var(--accent-soft);stroke-width:10}
+.ring .fg{fill:none;stroke:var(--accent);stroke-width:10;stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dasharray .4s}
+.ring text{fill:var(--ink);font:600 17px var(--f-num)}
+.big{font:600 20px/1.3 var(--f-num);margin:2px 0 8px}
+.big small{font:400 13px var(--f-body);color:var(--muted)}
+.dose{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.dose:last-child{border-bottom:0}
+.dose .t{font:600 14px var(--f-num);width:52px;flex:none}
+.dose .n{flex:1;min-width:0}
+.dose .n b{font-weight:600}.dose .n small{display:block;color:var(--muted);font-size:12px}
+.tick{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);background:none;display:grid;place-items:center;color:transparent;flex:none}
+.tick svg{width:16px;height:16px}
+.tick.on{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+/* forms */
+.form{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,130px),1fr))}
+.field{display:grid;gap:4px;min-width:0}
+.field label,.lbl{font-size:13px;color:var(--muted);font-weight:500}
+input,select,textarea{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%;min-width:0}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+input.numin{font:600 24px/1.2 var(--f-num);text-align:center;direction:ltr}
+textarea{resize:vertical;min-height:64px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg label{position:relative}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg span{display:inline-block;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);font-size:13.5px;cursor:pointer}
+.seg input:checked+span{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.seg input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.checks{display:grid;gap:6px}
+.ck{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);cursor:pointer;font-size:14px;line-height:1.55}
+.ck input{width:20px;height:20px;margin:1px 0 0;flex:none;accent-color:var(--accent)}
+.ck.em input{accent-color:var(--bad)}
+.ck:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.ck.em:has(input:checked){border-color:var(--bad);background:var(--bad-soft)}
+.err{color:var(--bad);font-size:13px;min-height:1px;margin:4px 0 0}
+/* result */
+.result{border-radius:16px;padding:14px 16px;background:var(--surface-2);display:grid;gap:4px}
+.result.ok{background:var(--ok-soft)}.result.warn{background:var(--warn-soft)}.result.bad{background:var(--bad-soft)}.result.info{background:var(--info-soft)}
+.result .chip{background:var(--surface);border-color:transparent}
+.r-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.r-top b{font:700 16px/1.4 var(--f-display)}
+.r-val{font:600 34px/1.15 var(--f-num);direction:ltr;text-align:right}
+.r-val small{font:500 14px var(--f-body);color:var(--muted)}
+.result p{margin:2px 0 0;font-size:14px}
+/* log */
+.mchips{display:flex;gap:6px;flex-wrap:wrap}
+.mchip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--ink)}
+.mchip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.mchip small{font-family:var(--f-num);opacity:.65;margin-inline-start:4px}
+.chart{direction:ltr;margin-top:8px}
+.chart svg{display:block;width:100%;height:auto}
+.chart .gl{stroke:var(--line);stroke-width:1}
+.chart .tk{fill:var(--muted);font:500 10px var(--f-num)}
+.chart .band{fill:var(--ok-soft)}
+.chart .ref{stroke:var(--ok);stroke-width:1;stroke-dasharray:3 3;opacity:.7}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:3px;border-radius:2px;vertical-align:middle;margin-inline-end:5px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.stat{background:var(--surface-2);border-radius:12px;padding:8px 10px;min-width:0}
+.stat span{display:block;font-size:11.5px;color:var(--muted)}
+.stat b{font:600 16px/1.3 var(--f-num);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:420px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.rlist{display:grid}
+.rd{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);min-width:0}
+.rd:last-child{border-bottom:0}
+.rd .v{font:600 16px var(--f-num);min-width:70px}
+.rd .m{flex:1;min-width:0;font-size:12.5px;color:var(--muted)}
+.rd .m b{color:var(--ink);font-weight:500;font-size:13px}
+.x{background:none;border:0;color:var(--muted);padding:6px;border-radius:8px;display:grid;place-items:center;font-size:12px;font-weight:600}
+.x svg{width:16px;height:16px}
+.x.confirm{color:var(--on-bad);background:var(--bad);padding:4px 10px}
+/* body numbers */
+.kv{display:grid;gap:0}
+.kv>div{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.kv>div:last-child{border-bottom:0}
+.kv span{color:var(--muted);font-size:13.5px}
+.kv b{font:600 15px var(--f-num);text-align:left;white-space:nowrap}
+.kv em{font-style:normal;font-size:12px;color:var(--muted);display:block;text-align:left}
+/* tabs */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:color-mix(in srgb,var(--surface) 94%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--line);
+  padding:6px max(16px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.tabs-in{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));max-width:560px;margin:0 auto}
+.tabs button{background:none;border:0;display:grid;justify-items:center;gap:1px;padding:4px 0;color:var(--muted);font-size:11.5px;font-weight:600;border-radius:12px}
+.tabs button span.i{width:46px;height:28px;border-radius:999px;display:grid;place-items:center}
+.tabs svg{width:22px;height:22px}
+.tabs button[aria-current="page"]{color:var(--accent)}
+.tabs button[aria-current="page"] span.i{background:var(--accent-soft)}
+/* sheet */
+.sheet-bg{position:fixed;inset:0;z-index:40;background:var(--scrim);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:640px;max-height:94%;overflow:auto;overscroll-behavior:contain;border-radius:24px 24px 0 0;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) calc(22px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(30px);opacity:.4}to{transform:none;opacity:1}}
+.sheet-h{position:sticky;top:0;z-index:3;background:var(--surface);display:flex;align-items:center;gap:10px;padding:14px 0 10px}
+.sheet-h h2{font:700 17px/1.35 var(--f-display);margin:0;flex:1;text-wrap:balance}
+.sheet-h .x{background:var(--surface-2);width:34px;height:34px;border-radius:50%}
+.sheet-b{display:grid;gap:14px}
+.sheet-b>p{margin:0}
+.steps{margin:0;padding-inline-start:20px;font-size:14px;display:grid;gap:4px}
+.toast{position:fixed;z-index:60;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;font-weight:500;max-width:min(92vw,440px);box-shadow:0 6px 24px rgba(0,0,0,.2)}
+/* tests */
+.stage{border-radius:18px;background:var(--surface-2);border:1px solid var(--line);padding:16px;display:grid;gap:10px;justify-items:center;text-align:center}
+.bignum{font:600 56px/1 var(--f-num);color:var(--ink)}
+.bignum small{font:500 14px var(--f-body);color:var(--muted);display:block;margin-top:6px}
+.hr-top{display:flex;gap:16px;align-items:center;width:100%;justify-content:center}
+.hr-cam{width:72px;height:72px;border-radius:50%;overflow:hidden;background:#200;border:3px solid var(--pulse);flex:none}
+.hr-cam video{width:100%;height:100%;object-fit:cover}
+.heart{color:var(--pulse);width:30px;height:30px}
+.heart.beat{animation:hb var(--beat,1s) ease-in-out infinite}
+@keyframes hb{0%,100%{transform:scale(1)}15%{transform:scale(1.22)}30%{transform:scale(1)}}
+.wave{width:100%;height:90px;border-radius:12px;display:block;
+  background-color:var(--surface);background-image:linear-gradient(var(--pulse-grid) 1px,transparent 1px),linear-gradient(90deg,var(--pulse-grid) 1px,transparent 1px);background-size:12px 12px}
+.prog{height:6px;border-radius:6px;background:var(--line);overflow:hidden;width:100%}
+.prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s linear}
+.status{font-size:14px;color:var(--muted);min-height:1.7em}
+.pad{width:100%;min-height:240px;border-radius:20px;border:0;display:grid;place-items:center;font:700 20px/1.4 var(--f-display);color:var(--ink);background:var(--surface-2);touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.pad.wait{background:var(--warn-soft)}.pad.go{background:var(--ok);color:var(--surface)}.pad.early{background:var(--bad-soft)}
+.eye-box{background:#fff;border-radius:16px;width:220px;height:220px;max-width:100%;display:grid;place-items:center;border:1px solid var(--line)}
+.eye-box canvas{width:200px;height:200px}
+.arrows{direction:ltr;display:grid;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(3,56px);gap:6px;justify-content:center}
+.arrows button{border-radius:14px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--ink)}
+.arrows button svg{width:26px;height:26px}
+.arrows .u{grid-area:1/2}.arrows .l{grid-area:2/1}.arrows .r{grid-area:2/3}.arrows .d{grid-area:3/2}.arrows .n{grid-area:2/2;font-size:11.5px;font-weight:600;color:var(--muted)}
+.plate{width:260px;height:260px;max-width:100%;border-radius:50%;background:#f3efe6}
+.opts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:100%}
+.opts button{padding:12px 4px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font:600 18px var(--f-num);color:var(--ink)}
+.opts button.wide{grid-column:span 4;font:600 14px var(--f-body)}
+.whitecard{background:#fff;border-radius:14px;padding:8px;border:1px solid var(--line)}
+.cal-wrap{width:100%;overflow:hidden;border-radius:12px;border:1px dashed var(--line);padding:10px 0}
+.cal-card{height:auto;aspect-ratio:53.98/85.6;max-width:none;border-radius:10px;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 55%,var(--ink)));border:2px solid var(--ink)}
+.q{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:0;display:grid;gap:8px}
+.q legend{font-size:14.5px;font-weight:500;padding:0 4px;line-height:1.55}
+.q .seg span{font-size:12.5px;padding:6px 10px}
+/* triage */
+.triage{border-radius:18px;padding:16px;display:grid;gap:8px}
+.triage.bad{background:var(--bad-soft)}.triage.warn{background:var(--warn-soft)}.triage.info{background:var(--info-soft)}.triage.ok{background:var(--ok-soft)}
+.triage h3{font:700 18px/1.35 var(--f-display);margin:0}
+.triage p{margin:0;font-size:14px}
+.callnum{font:600 40px/1.1 var(--f-num);user-select:all;-webkit-user-select:all}
+.sym{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,150px),1fr));gap:8px}
+.sym button{text-align:start;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:11px 12px;font-size:14px;font-weight:600;color:var(--ink);line-height:1.45}
+.know summary{cursor:pointer;font:700 15px/1.4 var(--f-display);list-style:none;display:flex;justify-content:space-between;gap:10px}
+.know summary::-webkit-details-marker{display:none}
+.know summary::after{content:"+";color:var(--muted);font-family:var(--f-num)}
+.know[open] summary::after{content:"−"}
+.know ol,.know ul{margin:10px 0 0;padding-inline-start:20px;font-size:14px;display:grid;gap:4px}
+.fast{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:10px}
+.fast div{background:var(--surface-2);border-radius:12px;padding:8px;text-align:center;font-size:12px;line-height:1.45}
+.fast b{display:block;font:700 22px/1.2 var(--f-num);color:var(--bad)}
+/* chat */
+.chat{display:grid;gap:10px;align-content:start;min-height:120px}
+.msg{max-width:88%;padding:10px 13px;border-radius:16px;font-size:14.5px;line-height:1.7;white-space:normal;overflow-wrap:anywhere}
+.msg.u{justify-self:start;background:var(--accent);color:var(--accent-ink);border-end-start-radius:6px}
+.msg.a{justify-self:end;background:var(--surface-2);border:1px solid var(--line);border-end-end-radius:6px}
+.msg.a ul{margin:4px 0;padding-inline-start:18px}
+.msg.a p{margin:0 0 6px}.msg.a p:last-child{margin:0}
+.chat-f{display:flex;gap:8px;align-items:flex-end;position:sticky;bottom:0;background:var(--surface);padding-top:8px}
+.chat-f textarea{min-height:48px;flex:1}
+.sugg{display:flex;gap:6px;flex-wrap:wrap}
+.sugg button{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--ink)}
+/* medical id + report */
+.mid{border-radius:18px;border:1px solid var(--line);overflow:hidden}
+.mid-h{background:var(--bad);color:var(--on-bad);padding:8px 14px;font:700 14px var(--f-display);display:flex;justify-content:space-between}
+.mid .kv{padding:4px 14px}
+.paper{background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:14px;font-size:13.5px;overflow-x:auto}
+.paper h4{font:700 14px var(--f-display);margin:12px 0 6px}
+.paper h4:first-child{margin-top:0}
+.paper table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.paper td,.paper th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:start;white-space:nowrap}
+.paper th{color:var(--muted);font-weight:500;font-size:12px}
+.foot{font-size:12px;color:var(--muted);line-height:1.7;margin-top:6px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="app" id="app">
+  <header class="top"><div class="wrap top-row">
+    <div class="brand">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="14" fill="var(--accent)"/><path d="M19 10h10v9h9v10h-9v9H19v-9h-9V19h9z" fill="none" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linejoin="round"/><path d="M8 26h8l3-6 4 12 3-8 2 2h12" fill="none" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div><b>عيادة الجيب</b><small id="hello">طبيبك الشخصي في هاتفك</small></div>
+    </div>
+    <button class="sos" data-act="sos" type="button" aria-label="الطوارئ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>طوارئ</button>
+  </div></header>
+  <main id="view" class="wrap" tabindex="-1"></main>
+  <nav class="tabs" aria-label="الأقسام"><div class="tabs-in" id="tabs"></div></nav>
+</div>
+<div class="sheet-bg" id="sheetBg" hidden><section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetT">
+  <div class="sheet-h"><h2 id="sheetT"></h2><button class="x" type="button" data-act="close" aria-label="إغلاق"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="sheet-b" id="sheetB"></div>
+</section></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script>
+(()=>{'use strict';
+document.documentElement.lang='ar';document.documentElement.dir='rtl';
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-5);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const IN_VIEWER=!!(window.claude&&typeof window.claude.use==='function');
+const fD=new Intl.DateTimeFormat('ar-u-nu-latn',{day:'numeric',month:'short'});
+const fDT=new Intl.DateTimeFormat('ar-u-nu-latn',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
+const fLong=new Intl.DateTimeFormat('ar-u-nu-latn',{weekday:'long',day:'numeric',month:'long'});
+const dayKey=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const D=864e5;
+
+/* ---------- icons ---------- */
+const IP={
+ home:'M3 11l9-7 9 7M5 10v10h14V10M10 20v-6h4v6',
+ pulse:'M3 12h4l3-7 4 14 3-7h4',
+ steth:'M6 3v6a4 4 0 0 0 8 0V3M10 13v2a5 5 0 0 0 10 0v-3M20 9.5a1.5 1.5 0 1 0 0 .01',
+ chart:'M4 4v16h16M7 15l4-4 3 3 5-6',
+ user:'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0',
+ heart:'M12 20s-7-4.4-9.2-9A5 5 0 0 1 12 6a5 5 0 0 1 9.2 5c-2.2 4.6-9.2 9-9.2 9z',
+ lungs:'M12 4v7M12 11l-3 2M12 11l3 2M8.5 7C5.5 7 3 12 3 17c0 2 1 3 3 3s3-1 3-3v-6M15.5 7c3 0 5.5 5 5.5 10 0 2-1 3-3 3s-3-1-3-3v-6',
+ wave:'M3 8c1.5-2 3 2 4.5 0s3 2 4.5 0 3 2 4.5 0 3 2 4.5 0M3 13c1.5-2 3 2 4.5 0s3 2 4.5 0 3 2 4.5 0 3 2 4.5 0M3 18c1.5-2 3 2 4.5 0s3 2 4.5 0 3 2 4.5 0 3 2 4.5 0',
+ bolt:'M13 2 4 14h7l-1 8 9-12h-7z',
+ eye:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z',
+ palette:'M12 3a9 9 0 1 0 0 18c1 0 1.5-.7 1.5-1.5 0-1-.8-1.5-.8-2.3 0-.8.7-1.2 1.6-1.2H17a4 4 0 0 0 4-4c0-5-4-9-9-9zM7.5 11.5h.01M10 7.5h.01M15 8h.01',
+ grid:'M4 4h16v16H4zM4 9.33h16M4 14.66h16M9.33 4v16M14.66 4v16',
+ dial:'M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4',
+ ear:'M7 9a5 5 0 0 1 10 0c0 3-3 4-3 7a3 3 0 0 1-5.6 1.4M10 9.5a2 2 0 0 1 4 0',
+ gauge:'M4 16a8 8 0 1 1 16 0M12 16l4-5M12 16h.01',
+ drop:'M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z',
+ o2:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM6.5 12h2l1.5-3 2 6 1.5-3h4',
+ thermo:'M10 14V5a2 2 0 1 1 4 0v9a4 4 0 1 1-4 0zM12 10v6',
+ scale:'M5 5h14l-1.5 15h-11zM9 10a3 3 0 0 1 6 0M12 10l1.5-2',
+ chat:'M4 5h16v11H9l-5 4zM8 9.5h8M8 12.5h5',
+ mood:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM8.5 14a4 4 0 0 0 7 0M9 9.5h.01M15 9.5h.01',
+ pill:'M10.5 3.5a5 5 0 0 1 7 7l-7 7a5 5 0 0 1-7-7zM7 7l7 7',
+ glass:'M6 3h12l-1.5 17a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1zM6.6 9h10.8',
+ plus:'M12 5v14M5 12h14',
+ x:'M6 6l12 12M18 6 6 18',
+ check:'M5 12.5l4.5 4.5L19 7',
+ doc:'M6 3h9l4 4v14H6zM9 12h7M9 16h7',
+ down:'M12 4v12M7 11l5 5 5-5M5 20h14',
+ up:'M12 20V8M7 13l5-5 5 5M5 4h14',
+ bell:'M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4',
+ alert:'M12 3 2 20h20zM12 10v4M12 17h.01',
+ info:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 11v5M12 8h.01',
+ back:'M9 6l6 6-6 6',chev:'M15 6l-6 6 6 6',
+ trash:'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13',
+ ruler:'M4 17 17 4l3 3L7 20zM8 13l2 2M11 10l2 2M14 7l2 2',
+ arrowU:'M12 19V5M6 11l6-6 6 6',arrowD:'M12 5v14M6 13l6 6 6-6',arrowL:'M19 12H5M11 6l-6 6 6 6',arrowR:'M5 12h14M13 6l6 6-6 6',
+ phone:'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2',
+ brain:'M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 6 1V5a2 2 0 0 0-3-1zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-6 1'
+};
+const ic=(n,cls='')=>`<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IP[n]||''}"/></svg>`;
+
+/* ---------- data ---------- */
+const COUNTRIES=[['SA','السعودية','997'],['AE','الإمارات','998'],['KW','الكويت','112'],['QA','قطر','999'],['BH','البحرين','999'],['OM','عُمان','9999'],['EG','مصر','123'],['JO','الأردن','911'],['IQ','العراق','122'],['LB','لبنان','140'],['MA','المغرب','15'],['DZ','الجزائر','14'],['TN','تونس','190'],['XX','دولة أخرى','112']];
+const KEY='pocket-clinic:v1';
+function blankState(){return{v:1,updated:0,demo:false,profile:{name:'',sex:'',birthYear:'',height:'',weight:'',blood:'',conditions:'',allergies:'',contactName:'',contactPhone:'',country:'SA',emNum:'997',gluUnit:'mg',activity:'1.375',waist:'',neck:'',hip:'',pxmm:0},readings:[],meds:[],medLog:{},water:{}}}
+function demoState(){
+  const s=blankState();s.demo=true;
+  Object.assign(s.profile,{name:'سارة (مثال)',sex:'f',birthYear:'1988',height:'165',weight:'68',blood:'A+',conditions:'لا يوجد',allergies:'البنسلين',contactName:'أحمد',contactPhone:'0500000000',waist:'78',neck:'33',hip:'98'});
+  const now=Date.now(),add=(k,dd,v,h=8)=>s.readings.push({id:uid(),k,ts:now-dd*D-h*36e5,v});
+  [[124,82],[121,79],[128,84],[119,78],[126,81],[132,86],[122,80],[118,77],[125,82],[121,79]].forEach(([a,b],i)=>add('bp',9-i,{sys:a,dia:b,pulse:68+(i*3)%9}));
+  [72,68,75,70,66,71,69].forEach((b,i)=>add('hr',12-i*2,{bpm:b,src:i%2?'cam':'man'},2));
+  [96,102,94,99,105,97,93].forEach((m,i)=>add('glu',13-i*2,{mg:m,ctx:'f'},10));
+  [69.4,69.1,68.9,68.7,68.4,68.2,68.0].forEach((kg,i)=>add('wt',13-i*2,{kg},11));
+  [98,97,98].forEach((p,i)=>add('spo2',6-i*3,{pct:p},3));
+  add('temp',3,{c:36.7},4);add('react',5,{ms:286,best:241});add('vision',20,{eye:'R',d:25});add('vision',20,{eye:'L',d:20});add('color',20,{score:5,of:5});add('rr',4,{rpm:15,src:'tap'});
+  s.meds=[{id:uid(),name:'فيتامين د',dose:'1000 وحدة',times:['09:00'],on:true},{id:uid(),name:'أوميغا 3',dose:'كبسولة واحدة',times:['21:00'],on:true}];
+  s.water[dayKey()]=1000;
+  return s;
+}
+function normalize(x){
+  if(!x||typeof x!=='object'||!Array.isArray(x.readings))return null;
+  const b=blankState();x.profile=Object.assign(b.profile,x.profile||{});
+  x.meds=Array.isArray(x.meds)?x.meds:[];x.medLog=x.medLog||{};x.water=x.water||{};return x;
+}
+function loadLocal(){try{const t=localStorage.getItem(KEY);return t?normalize(JSON.parse(t)):null}catch(e){return null}}
+let S=loadLocal()||demoState();
+let remote=null,writing=false,dirty=false,tSave=0;
+function persist(){
+  S.updated=Date.now();
+  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+  if(remote){clearTimeout(tSave);tSave=setTimeout(pushRemote,900)}
+}
+async function pushRemote(){
+  if(!remote)return; if(writing){dirty=true;return}
+  writing=true;
+  try{await remote.set({json:JSON.stringify(S),updated:S.updated})}catch(e){}
+  writing=false; if(dirty){dirty=false;pushRemote()}
+}
+async function connectRemote(){
+  if(!IN_VIEWER)return;
+  try{
+    const [db,user]=await Promise.all([claude.use('db'),claude.use('user')]);
+    if(!db||!user)return; const id=await user.id(); if(!id)return;
+    const ref=db.doc('data/users/'+id+'/clinic'); const snap=await ref.get();
+    let remoteUpdated=0;
+    if(snap.exists){const d=snap.data()||{};remoteUpdated=+d.updated||0;let rs=null;try{rs=normalize(JSON.parse(d.json||'null'))}catch(e){}
+      if(rs&&remoteUpdated>(S.updated||0)){S=rs;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){};render()}}
+    remote=ref;
+    if((S.updated||0)>remoteUpdated)pushRemote();
+  }catch(e){}
+}
+function ensureReal(){
+  if(!S.demo)return false;
+  const p=S.profile,keep={country:p.country,emNum:p.emNum,gluUnit:p.gluUnit,pxmm:p.pxmm};
+  S=blankState();Object.assign(S.profile,keep);return true;
+}
+const P=()=>S.profile;
+const age=()=>{const y=+P().birthYear;return y>1900?new Date().getFullYear()-y:null};
+const emNum=()=>P().emNum||'112';
+const countryName=()=>(COUNTRIES.find(c=>c[0]===P().country)||COUNTRIES[COUNTRIES.length-1])[1];
+const byK=k=>S.readings.filter(r=>r.k===k).sort((a,b)=>a.ts-b.ts);
+const last=(k,f)=>{let b=null;for(const r of S.readings)if(r.k===k&&(!f||f(r))&&(!b||r.ts>b.ts))b=r;return b};
+function addReading(k,v){ensureReal();const r={id:uid(),k,ts:Date.now(),v};S.readings.push(r);if(k==='wt')P().weight=String(v.kg);persist();return r}
+
+/* ---------- classification ---------- */
+const LVN={ok:'طبيعي',warn:'انتبه',bad:'يحتاج تدخلاً',info:'ملاحظة'};
+const C=(lv,t,a)=>({lv,t,a});
+function cBP(s,d){
+  if(s>180||d>120)return C('bad','أزمة ارتفاع ضغط','استرح 5 دقائق وأعد القياس. إذا بقي مرتفعاً أو صاحبه ألم في الصدر أو ضيق نفس أو صداع شديد أو ضعف أو اضطراب في الرؤية، فاتصل بالإسعاف فوراً.');
+  if(s>=140||d>=90)return C('bad','ارتفاع ضغط – المرحلة الثانية','راجع طبيبك قريباً لتقييم العلاج. قلّل الملح، وتابع القياس يومياً في الوقت نفسه.');
+  if(s>=130||d>=80)return C('warn','ارتفاع ضغط – المرحلة الأولى','تابع القياس على عدة أيام. الحركة اليومية وتقليل الملح والوزن تخفض الضغط. استشر طبيبك إن استمر.');
+  if(s>=120)return C('warn','ضغط أعلى من المثالي','لم يصل إلى ارتفاع الضغط، لكنه يستحق المتابعة وتحسين نمط الحياة.');
+  if(s<90||d<60)return C('warn','ضغط منخفض','إذا صاحبه دوخة أو إغماء أو تعب شديد فاستشر الطبيب. اشرب الماء وانهض ببطء.');
+  return C('ok','ضغط طبيعي','قراءة مثالية. استمر على نمط حياة صحي وقِس بانتظام.');
+}
+function cHR(b){
+  if(b<40)return C('bad','نبض منخفض جداً','إذا صاحبه دوخة أو إغماء أو ضيق نفس فاطلب رعاية عاجلة.');
+  if(b<60)return C('info','نبض أبطأ من المعتاد','قد يكون طبيعياً عند الرياضيين وأثناء الراحة العميقة. استشر الطبيب إن صاحبه تعب أو دوخة.');
+  if(b<=100)return C('ok','نبض طبيعي في الراحة','المعدل الطبيعي للبالغين في الراحة بين 60 و100 نبضة في الدقيقة.');
+  if(b<=120)return C('warn','نبض سريع','تأكد أنك مرتاح منذ 5 دقائق. القهوة والتوتر والحمى والجفاف ترفع النبض. أعد القياس لاحقاً.');
+  return C('bad','نبض سريع جداً في الراحة','إذا استمر أو صاحبه ألم صدر أو دوخة أو ضيق نفس فاطلب رعاية طبية عاجلة.');
+}
+function cSpO2(p){
+  if(p<90)return C('bad','أكسجين منخفض جداً','قراءة أقل من 90% تستدعي رعاية طبية فورية، خاصة مع ضيق التنفس.');
+  if(p<=92)return C('bad','أكسجين منخفض','أعد القياس بيد دافئة وثابتة. إذا تأكدت القراءة فاطلب استشارة طبية اليوم.');
+  if(p<95)return C('warn','أقل من المعتاد','المعدل الطبيعي 95% فأكثر. أعد القياس، وراجع الطبيب إن تكرر أو صاحبه ضيق نفس. مرضى الرئة المزمنة قد تكون لهم أهداف أخرى.');
+  return C('ok','تشبع أكسجين طبيعي','المعدل الطبيعي بين 95% و100%.');
+}
+function cTemp(c){
+  if(c<35)return C('bad','انخفاض حرارة الجسم','دفّئ الجسم تدريجياً واطلب رعاية طبية عاجلة.');
+  if(c<36)return C('warn','حرارة منخفضة قليلاً','تأكد من طريقة القياس وأعده بعد دقائق.');
+  if(c<37.5)return C('ok','حرارة طبيعية','الطبيعي تقريباً بين 36 و37.4 درجة.');
+  if(c<38)return C('warn','ارتفاع طفيف','اشرب السوائل وارتح، وأعد القياس بعد ساعات.');
+  if(c<39.5)return C('warn','حمّى','اشرب السوائل وارتح. خافض الحرارة يخفف الانزعاج. راجع الطبيب إن استمرت أكثر من 3 أيام أو ظهرت علامات خطر.');
+  if(c<41)return C('bad','حمّى شديدة','استخدم خافض الحرارة واطلب استشارة طبية اليوم، وفوراً إذا صاحبها تيبس رقبة أو تشوش أو طفح أو صعوبة تنفس.');
+  return C('bad','حرارة خطيرة','اطلب الإسعاف فوراً وابدأ بتبريد الجسم.');
+}
+function cRR(r){
+  if(r<8)return C('bad','تنفس بطيء جداً','إذا كانت القراءة دقيقة وصاحبها نعاس أو تشوش فاطلب رعاية عاجلة.');
+  if(r<12)return C('info','تنفس أبطأ من المعتاد','قد يحدث أثناء الاسترخاء العميق. الطبيعي للبالغين 12–20 نفساً في الدقيقة.');
+  if(r<=20)return C('ok','معدل تنفس طبيعي','الطبيعي للبالغين في الراحة بين 12 و20 نفساً في الدقيقة.');
+  if(r<=24)return C('warn','تنفس أسرع من المعتاد','قد يرتفع مع القلق أو الحمى أو بعد مجهود. أعد القياس بعد الراحة.');
+  return C('bad','تنفس سريع','تنفس أسرع من 24 في الراحة قد يدل على مشكلة؛ اطلب تقييماً طبياً، وفوراً إذا صاحبه ضيق نفس.');
+}
+const gUnit=()=>P().gluUnit==='mmol'?'mmol/L':'mg/dL';
+const gShow=mg=>P().gluUnit==='mmol'?(mg/18).toFixed(1):String(Math.round(mg));
+const CTX={f:'صائم',p:'بعد الأكل بساعتين',r:'عشوائي'};
+function cGlu(mg,ctx){
+  if(mg<54)return C('bad','هبوط شديد في السكر','تناول 15–20 غراماً من سكر سريع فوراً (نصف كوب عصير أو 3–4 ملاعق صغيرة سكر) وأعد القياس بعد 15 دقيقة. إذا كان الشخص مشوشاً أو فاقد الوعي فاتصل بالإسعاف.');
+  if(mg<70)return C('warn','سكر منخفض','طبّق قاعدة 15/15: تناول 15 غراماً من سكر سريع ثم أعد القياس بعد 15 دقيقة.');
+  if(mg>=300)return C('bad','ارتفاع شديد في السكر','اشرب الماء وأعد القياس. إذا صاحبه قيء أو ألم بطن أو تنفس سريع أو نعاس فاطلب رعاية عاجلة.');
+  if(ctx==='f'){
+    if(mg>=126)return C('bad','مرتفع وأنت صائم','قراءتان صائمتان عند 126 أو أكثر قد تشيران إلى السكري. راجع الطبيب لإجراء تحليل السكر التراكمي (HbA1c).');
+    if(mg>=100)return C('warn','أعلى من الطبيعي وأنت صائم','هذا نطاق ما قبل السكري (100–125). الحركة وتقليل السكريات والنشويات المكررة تساعد، واطلب تحليلاً تأكيدياً.');
+    return C('ok','سكر صائم طبيعي','الطبيعي وأنت صائم بين 70 و99 ملغ/دل.');
+  }
+  if(mg>=200)return C('bad','سكر مرتفع','قراءة 200 أو أكثر تستدعي مراجعة الطبيب، خاصة مع العطش وكثرة التبول.');
+  if(mg>=140)return C('warn','أعلى من المثالي',ctx==='p'?'بعد ساعتين من الأكل يُفضّل أن يكون أقل من 140.':'تابع القياس وأنت صائم للحصول على صورة أوضح.');
+  return C('ok','سكر طبيعي','قراءة ضمن النطاق الطبيعي.');
+}
+function bmiOf(kg){const h=+P().height/100;return h>0.5&&kg>0?kg/(h*h):null}
+function cBMI(b){
+  if(b<18.5)return C('warn','نحافة','مؤشر الكتلة أقل من 18.5. استشر الطبيب أو أخصائي التغذية لزيادة الوزن بطريقة صحية.');
+  if(b<25)return C('ok','وزن صحي','مؤشر الكتلة بين 18.5 و24.9.');
+  if(b<30)return C('warn','وزن زائد','مؤشر الكتلة بين 25 و29.9. خسارة 5–10% من الوزن تحسّن الضغط والسكر.');
+  return C('bad','سمنة','مؤشر الكتلة 30 أو أكثر يرفع خطر السكري وأمراض القلب. ناقش خطة لإنقاص الوزن مع طبيبك.');
+}
+function cReact(ms){
+  if(ms<250)return C('ok','سريع جداً','زمن استجابة ممتاز.');
+  if(ms<330)return C('ok','طبيعي','متوسط زمن الاستجابة للبالغين بين 250 و330 ملي ثانية تقريباً.');
+  if(ms<450)return C('info','أبطأ من المتوسط','قد يتأثر بالتعب وقلة النوم والتوتر وبعض الأدوية. أعد الاختبار بعد الراحة.');
+  return C('warn','بطيء','إذا كان البطء جديداً ومصحوباً بتشوش أو ضعف أو صعوبة في الكلام فاطلب رعاية فورية.');
+}
+function cTremor(r){
+  if(r<0.15)return C('ok','يد ثابتة جداً','اهتزاز ضئيل جداً.');
+  if(r<0.4)return C('ok','ثبات طبيعي','الرعشة الخفيفة جداً طبيعية عند الجميع.');
+  if(r<1)return C('info','اهتزاز ملحوظ','قد تزيده القهوة والتوتر والتعب وقلة النوم. أعد الاختبار في وقت آخر وقارن.');
+  return C('warn','اهتزاز واضح','إذا لاحظت رعشة مستمرة، أو أثناء الراحة، أو تزداد مع الوقت، فاستشر طبيب أعصاب.');
+}
+const snel=d=>d>=400?'أقل من 20/200':'20/'+d;
+const snelM=d=>d>=400?'<6/60':'6/'+String(+(d*0.3).toFixed(1));
+function cVision(d){
+  if(d<=20)return C('ok','حدة بصر ممتازة','تعادل 6/6 (20/20).');
+  if(d<=30)return C('ok','حدة بصر جيدة','قريبة من الطبيعي.');
+  if(d<=50)return C('warn','ضعف خفيف','يُنصح بفحص النظر لدى أخصائي البصريات.');
+  return C('warn','ضعف واضح','راجع طبيب العيون أو أخصائي البصريات. إذا كان الضعف مفاجئاً فهذه حالة عاجلة.');
+}
+function cColor(s,of){return s>=of-1?C('ok','تمييز ألوان طبيعي','لم يظهر ضعف في تمييز الأحمر والأخضر.'):C('warn','احتمال ضعف في تمييز الأحمر والأخضر','هذا مؤشر أولي؛ يؤكده طبيب العيون باختبار قياسي. تأكد من إيقاف الوضع الليلي ومرشحات الألوان ثم أعد الاختبار.')}
+function cPHQ(s){
+  if(s<5)return C('ok','لا توجد أعراض اكتئاب تُذكر','حافظ على النوم المنتظم والحركة والتواصل مع من تحب.');
+  if(s<10)return C('info','أعراض خفيفة','راقب مزاجك، وأعد الاختبار بعد أسبوعين. الحركة اليومية والنوم المنتظم والتحدث مع شخص تثق به تساعد.');
+  if(s<15)return C('warn','أعراض متوسطة','يُنصح بالتحدث مع طبيب أو أخصائي نفسي. الاكتئاب حالة شائعة ولها علاج فعّال.');
+  return C('bad','أعراض شديدة','تواصل مع طبيب أو أخصائي نفسي في أقرب وقت. لست وحدك، والعلاج يحدث فرقاً حقيقياً.');
+}
+function cGAD(s){
+  if(s<5)return C('ok','قلق ضئيل','مستوى القلق ضمن الطبيعي.');
+  if(s<10)return C('info','قلق خفيف','جرّب التنفس البطيء والحركة وتقليل الكافيين، وأعد الاختبار بعد أسبوعين.');
+  if(s<15)return C('warn','قلق متوسط','يُنصح بالتحدث مع طبيب أو أخصائي نفسي؛ العلاج السلوكي المعرفي فعّال جداً.');
+  return C('bad','قلق شديد','تواصل مع طبيب أو أخصائي نفسي في أقرب وقت.');
+}
+const EYE={R:'اليمنى',L:'اليسرى'};
+const MET={
+  bp:{n:'ضغط الدم',u:'mmHg',ic:'gauge',val:v=>v.sys+'/'+v.dia,cls:v=>cBP(v.sys,v.dia),ser:v=>[v.sys,v.dia],refs:[120,80],sn:['الانقباضي','الانبساطي']},
+  hr:{n:'النبض',u:'نبضة/د',ic:'heart',val:v=>v.bpm,cls:v=>cHR(v.bpm),ser:v=>[v.bpm],band:[60,100]},
+  spo2:{n:'الأكسجين',u:'%',ic:'o2',val:v=>v.pct,cls:v=>cSpO2(v.pct),ser:v=>[v.pct],band:[95,100]},
+  temp:{n:'الحرارة',u:'°م',ic:'thermo',val:v=>(+v.c).toFixed(1),cls:v=>cTemp(v.c),ser:v=>[v.c],band:[36,37.4]},
+  glu:{n:'السكر',u:()=>gUnit(),ic:'drop',val:v=>gShow(v.mg),cls:v=>cGlu(v.mg,v.ctx),ser:v=>[P().gluUnit==='mmol'?v.mg/18:v.mg],band:()=>P().gluUnit==='mmol'?[3.9,7.8]:[70,140],sub:v=>CTX[v.ctx]||''},
+  wt:{n:'الوزن',u:'كغ',ic:'scale',val:v=>(+v.kg).toFixed(1),cls:v=>{const b=bmiOf(v.kg);return b?cBMI(b):C('info','الوزن','أضف طولك في «ملفي» لحساب مؤشر الكتلة.')},ser:v=>[v.kg],band:()=>{const h=+P().height/100;return h>0.5?[18.5*h*h,24.9*h*h]:null}},
+  rr:{n:'التنفس',u:'نفَس/د',ic:'lungs',val:v=>v.rpm,cls:v=>cRR(v.rpm),ser:v=>[v.rpm],band:[12,20]},
+  react:{n:'رد الفعل',u:'ملي ث',ic:'bolt',val:v=>v.ms,cls:v=>cReact(v.ms),ser:v=>[v.ms]},
+  tremor:{n:'ثبات اليد',u:'م/ث²',ic:'wave',val:v=>(+v.rms).toFixed(2),cls:v=>cTremor(v.rms),ser:v=>[v.rms],sub:v=>v.hz?('التردد '+v.hz+' هرتز'):''},
+  vision:{n:'حدة البصر',u:'',ic:'eye',val:v=>snel(v.d),cls:v=>cVision(v.d),sub:v=>'العين '+EYE[v.eye]+' · '+snelM(v.d)},
+  color:{n:'تمييز الألوان',u:'',ic:'palette',val:v=>v.score+'/'+v.of,cls:v=>cColor(v.score,v.of)},
+  amsler:{n:'شبكة أمسلر',u:'',ic:'grid',val:v=>v.ok?'سليمة':'تشوّه',cls:v=>v.ok?C('ok','لا تشوّه في الرؤية المركزية','الخطوط مستقيمة وواضحة.'):C('warn','تشوّه في الرؤية المركزية','راجع طبيب العيون قريباً، وفوراً إذا ظهر التشوّه فجأة.'),sub:v=>'العين '+EYE[v.eye]},
+  astig:{n:'اللابؤرية',u:'',ic:'dial',val:v=>v.ok?'متساوية':'غير متساوية',cls:v=>v.ok?C('ok','لا مؤشر على اللابؤرية','كل الخطوط بدت متساوية.'):C('info','احتمال لابؤرية (استجماتيزم)','شائعة وتُصحَّح بالنظارة أو العدسات. افحص نظرك لدى أخصائي البصريات.'),sub:v=>'العين '+EYE[v.eye]},
+  hear:{n:'السمع',u:'',ic:'ear',val:v=>v.flags&&v.flags.length?'يحتاج متابعة':'متوازن',cls:v=>hearCls(v)},
+  phq:{n:'المزاج PHQ-9',u:'/27',ic:'mood',val:v=>v.score,cls:v=>cPHQ(v.score)},
+  gad:{n:'القلق GAD-7',u:'/21',ic:'brain',val:v=>v.score,cls:v=>cGAD(v.score)}
+};
+const unitOf=k=>{const u=MET[k].u;return typeof u==='function'?u():u};
+const NUMERIC=['bp','hr','spo2','temp','glu','wt','rr','react','tremor'];
+
+/* ---------- helpers ---------- */
+function agoS(ts){const s=(Date.now()-ts)/1e3;if(s<60)return 'الآن';if(s<3600)return Math.round(s/60)+' د';if(s<86400)return Math.round(s/3600)+' س';const d=Math.floor(s/86400);return d===1?'أمس':d<7?d+' أيام':fD.format(ts)}
+function ago(ts){const s=(Date.now()-ts)/1e3;if(s<60)return 'الآن';if(s<3600)return 'قبل '+Math.round(s/60)+' د';if(s<86400)return 'قبل '+Math.round(s/3600)+' س';const d=Math.floor(s/86400);if(d===1)return 'أمس';if(d<7)return 'قبل '+d+' أيام';return fD.format(ts)}
+function toast(t){const el=$('#toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2600)}
+function resultHTML(c,big,unit,extra=''){return `<div class="result ${c.lv}"><div class="r-top"><span class="chip ${c.lv}">${LVN[c.lv]}</span><b>${esc(c.t)}</b></div>${big!=null?`<div class="r-val"><bdi>${esc(big)}</bdi> <small>${esc(unit||'')}</small></div>`:''}<p>${esc(c.a)}</p>${extra}</div>`}
+function mdLite(t){
+  const lines=esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').split(/\n/);let out='',inList=false;
+  for(const l of lines){const m=l.match(/^\s*(?:[-•*]|\d+[.)])\s+(.*)/);
+    if(m){if(!inList){out+='<ul>';inList=true}out+='<li>'+m[1]+'</li>'}
+    else{if(inList){out+='</ul>';inList=false}const s=l.replace(/^#+\s*/,'').trim();if(s)out+='<p>'+s+'</p>'}}
+  if(inList)out+='</ul>';return out;
+}
+async function copyText(t){try{await navigator.clipboard.writeText(t);toast('تم النسخ')}catch(e){toast('حدّد النص وانسخه يدوياً')}}
+async function saveFile(name,text){
+  if(IN_VIEWER){let dl=null;try{dl=await claude.use('downloads')}catch(e){}
+    if(!dl){toast('التنزيل غير متاح في هذا العرض');return}
+    try{await dl.save({filename:name,data:text});toast('تم الحفظ')}catch(e){if(e&&e.code!=='declined')toast('تعذّر حفظ الملف هنا')}return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:name.endsWith('.json')?'application/json':'text/html'}));a.download=name;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);
+}
+const cssVar=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+/* ---------- signal processing ---------- */
+function resample(ts,vs,fs){const out=[];if(ts.length<2)return out;const dt=1/fs;let j=0;for(let t=ts[0];t<=ts[ts.length-1];t+=dt){while(j<ts.length-2&&ts[j+1]<t)j++;const span=ts[j+1]-ts[j]||1;const f=clamp((t-ts[j])/span,0,1);out.push(vs[j]+(vs[j+1]-vs[j])*f)}return out}
+function movAvg(x,w){const n=x.length,p=new Float64Array(n+1);for(let i=0;i<n;i++)p[i+1]=p[i]+x[i];const h=Math.floor(w/2),o=new Array(n);for(let i=0;i<n;i++){const a=Math.max(0,i-h),b=Math.min(n-1,i+h);o[i]=(p[b+1]-p[a])/(b-a+1)}return o}
+function bandpass(x,fs,lo,hi){const tr=movAvg(x,Math.max(3,Math.round(fs/lo)));const d=x.map((v,i)=>v-tr[i]);return movAvg(d,Math.max(1,Math.round(fs/hi/2)))}
+function autoRate(y,fs,minR,maxR){
+  const n=y.length;if(n<fs*4)return null;let m=0;for(const v of y)m+=v;m/=n;const x=y.map(v=>v-m);
+  const l0=Math.max(2,Math.floor(fs*60/maxR)),l1=Math.min(n-3,Math.ceil(fs*60/minR));if(l1<=l0+2)return null;
+  const ac=new Float64Array(l1+2);
+  for(let L=l0-1;L<=l1+1;L++){let s=0,e1=0,e2=0;for(let i=0;i+L<n;i++){s+=x[i]*x[i+L];e1+=x[i]*x[i];e2+=x[i+L]*x[i+L]}ac[L]=s/Math.sqrt(e1*e2||1)}
+  const pk=[];for(let L=l0;L<=l1;L++)if(ac[L]>ac[L-1]&&ac[L]>=ac[L+1])pk.push(L);if(!pk.length)return null;
+  let bl=pk[0],best=ac[bl];for(const L of pk)if(ac[L]>best){best=ac[L];bl=L}
+  for(const L of pk){if(L<bl&&Math.abs(L*2-bl)<=2&&ac[L]>0.85*best){bl=L;best=ac[L];break}}
+  const a=ac[bl-1],b=ac[bl],c=ac[bl+1],den=a-2*b+c,off=den?0.5*(a-c)/den:0;
+  return{rate:60*fs/(bl+clamp(off,-.5,.5)),q:best};
+}
+function drawWave(cv,arr,cap,color){
+  const dpr=window.devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;if(!W)return;
+  if(cv.width!==Math.round(W*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}
+  const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,W,H);if(arr.length<2)return;
+  let mx=0;for(const v of arr)mx=Math.max(mx,Math.abs(v));mx=mx||1;
+  c.strokeStyle=color;c.lineWidth=2;c.lineJoin='round';c.beginPath();
+  arr.forEach((v,i)=>{const x=(i/(cap-1))*W;const y=H/2-v/mx*H*0.38;i?c.lineTo(x,y):c.moveTo(x,y)});c.stroke();
+}
+/* ---------- motion helpers ---------- */
+async function motionPerm(){
+  try{if(typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission==='function'){return (await DeviceMotionEvent.requestPermission())==='granted'}
+    return typeof DeviceMotionEvent!=='undefined'}catch(e){return false}
+}
+function motionProbe(ms=1600){return new Promise(res=>{let got=false;const f=e=>{const a=e.accelerationIncludingGravity||e.acceleration;if(a&&a.x!=null)got=true};addEventListener('devicemotion',f);setTimeout(()=>{removeEventListener('devicemotion',f);res(got)},ms)})}
+const NO_SENSOR=()=>IN_VIEWER?'حساسات الهاتف لا تعمل داخل هذا العرض. افتح التطبيق مباشرة في متصفح هاتفك (Chrome أو Safari) لاستخدام هذا القياس.':'لم نستقبل بيانات من حساس الحركة. تأكد أنك تستخدم هاتفاً وأنك سمحت بالوصول إلى الحركة.';
+
+/* ---------- sheet ---------- */
+let sheetCleanup=null;
+function openSheet(title,html,mount){
+  closeSheet(true);
+  $('#sheetT').textContent=title;const b=$('#sheetB');b.innerHTML=html;$('#sheetBg').hidden=false;$('#sheet').scrollTop=0;
+  document.body.style.overflow='hidden';
+  if(mount){try{sheetCleanup=mount(b)||null}catch(e){console.error(e)}}
+  return b;
+}
+function closeSheet(silent){
+  if(sheetCleanup){try{sheetCleanup()}catch(e){}sheetCleanup=null}
+  $('#sheetBg').hidden=true;$('#sheetB').innerHTML='';document.body.style.overflow='';
+  if(!silent)render();
+}
+
+/* ---------- views ---------- */
+const VIEWS={home:vHome,measure:vMeasure,doctor:vDoctor,log:vLog,me:vMe};
+const TABS=[['home','الرئيسية','home'],['measure','افحص','pulse'],['doctor','الطبيب','steth'],['log','السجل','chart'],['me','ملفي','user']];
+let view='home',logK='bp',aiSample=null;
+function render(){
+  const v=VIEWS[view]?view:'home';
+  $('#view').innerHTML=VIEWS[v]();
+  $('#tabs').innerHTML=TABS.map(([id,n,i])=>`<button type="button" data-act="go" data-v="${id}" ${id===v?'aria-current="page"':''}><span class="i">${ic(i)}</span>${n}</button>`).join('');
+  const nm=P().name?P().name.split(' ')[0]:'';$('#hello').textContent=(nm?'أهلاً '+nm+' · ':'')+fLong.format(new Date());
+  if(v==='home')startMonitor();
+}
+function go(v){if(location.hash!=='#'+v)location.hash=v;else{view=v;render()}window.scrollTo(0,0)}
+addEventListener('hashchange',()=>{const h=location.hash.slice(1);view=VIEWS[h]?h:'home';render();window.scrollTo(0,0)});
+
+function ecgPath(w=360,b=28,beat=60){let d=`M0 ${b}`;for(let o=0;o<w;o+=beat){d+=` L${o+8} ${b} Q${o+11} ${b-5} ${o+14} ${b} L${o+19} ${b} L${o+21} ${b+3} L${o+24} ${b-25} L${o+27} ${b+9} L${o+30} ${b} L${o+37} ${b} Q${o+42} ${b-8} ${o+47} ${b} L${o+beat} ${b}`}return d}
+function startMonitor(){const r=last('hr');const bpm=r?clamp(r.v.bpm,40,160):72;const m=$('.monitor');if(m){m.style.setProperty('--sweep',(6*60/bpm).toFixed(2)+'s');m.style.setProperty('--beat',(60/bpm).toFixed(2)+'s')}}
+
+function vitalTile(k){
+  const r=last(k),M=MET[k],c=r?M.cls(r.v):null;
+  return `<button type="button" class="vital" data-act="vital" data-k="${k}"><span class="lb"><i class="dot ${c?c.lv:''}"></i>${M.n}</span><span class="val"><bdi>${r?esc(M.val(r.v)):'--'}</bdi></span><span class="un">${esc(unitOf(k))} · ${r?agoS(r.ts):'لا قراءة'}</span></button>`;
+}
+function todayDoses(){
+  const out=[],log=S.medLog[dayKey()]||{},now=new Date(),mins=now.getHours()*60+now.getMinutes();
+  for(const m of S.meds){if(!m.on)continue;for(const t of m.times||[]){const [h,mi]=t.split(':').map(Number);out.push({m,t,key:m.id+'@'+t,taken:!!log[m.id+'@'+t],late:(h*60+mi)<mins-30,recent:(h*60+mi)>=mins-180})}}
+  return out.sort((a,b)=>a.t.localeCompare(b.t));
+}
+function waterGoal(){const w=+P().weight;return w?clamp(Math.round(w*33/250)*250,1500,4000):2000}
+function vHome(){
+  const alerts=[];
+  for(const k of ['bp','hr','spo2','temp','glu','rr']){const r=last(k);if(r&&Date.now()-r.ts<3*D){const c=MET[k].cls(r.v);if(c.lv==='bad')alerts.push({k,c,r})}}
+  const doses=todayDoses(),due=doses.filter(d=>!d.taken&&d.late&&d.recent);
+  const wml=S.water[dayKey()]||0,goal=waterGoal(),pct=clamp(wml/goal,0,1),C2=2*Math.PI*38;
+  const tests=['vision','color','hear','react','tremor','phq','gad','amsler'].map(k=>last(k)).filter(Boolean).sort((a,b)=>b.ts-a.ts).slice(0,4);
+  const lastAny=S.readings.reduce((a,r)=>Math.max(a,r.ts),0);
+  return `<div class="stack">
+  ${S.demo?`<div class="banner info">${ic('info')}<div><b>هذه بيانات مثال لتجربة التطبيق</b><p>أول قراءة أو بيانات تضيفها تمسح المثال تلقائياً ويبدأ ملفك الخاص.</p><div class="row" style="margin-top:8px"><button class="btn sm" type="button" data-act="demoClear">ابدأ ملفي الآن</button></div></div></div>`:''}
+  <section class="monitor" aria-label="العلامات الحيوية">
+    <div class="mon-head"><span class="live"><i></i><b>العلامات الحيوية</b></span><span>${lastAny?'آخر قياس '+ago(lastAny):'لم تسجّل قياسات بعد'}</span></div>
+    <svg class="ecg" viewBox="0 0 360 46" preserveAspectRatio="none" aria-hidden="true"><path class="base" d="${ecgPath()}"/><path class="sweep" pathLength="100" d="${ecgPath()}"/></svg>
+    <div class="vitals">${['hr','bp','spo2','temp','glu','wt'].map(vitalTile).join('')}</div>
+  </section>
+  ${alerts.map(a=>`<div class="banner bad">${ic('alert')}<div><b>${MET[a.k].n}: ${esc(a.c.t)}</b><p>${esc(a.c.a)}</p></div></div>`).join('')}
+  ${due.map(d=>`<div class="banner warn">${ic('pill')}<div><b>فات موعد ${esc(d.m.name)} (${d.t})</b><p>إذا تذكرته الآن فخذه ما لم يقترب موعد الجرعة التالية، ثم علّمه بأنه أُخذ.</p></div></div>`).join('')}
+  <button type="button" class="hero-act" data-act="test" data-t="heart"><span class="hic">${ic('heart')}</span><span><b>قِس نبضك الآن</b><span>بإصبعك على الكاميرا والفلاش · 30 ثانية</span></span><span class="go">${ic('chev')}</span></button>
+  <div class="quick">
+    <button type="button" class="qa" data-act="addPick">${ic('plus')}سجّل قراءة</button>
+    <button type="button" class="qa" data-act="go" data-v="doctor">${ic('steth')}افحص أعراضك</button>
+    <button type="button" class="qa" data-act="report">${ic('doc')}تقرير للطبيب</button>
+  </div>
+  <div class="grid2">
+    <section class="panel"><div class="water">
+      <svg class="ring" viewBox="0 0 92 92" aria-hidden="true"><circle class="tr" cx="46" cy="46" r="38"/><circle class="fg" cx="46" cy="46" r="38" stroke-dasharray="${(C2*pct).toFixed(1)} ${C2.toFixed(1)}"/><text x="46" y="52" text-anchor="middle">${Math.round(pct*100)}%</text></svg>
+      <div style="min-width:0"><h3>الماء اليوم</h3><div class="big"><bdi>${wml}</bdi> <small>من ${goal} مل</small></div>
+      <div class="row"><button class="btn sm" type="button" data-act="water" data-ml="250">+ كوب</button><button class="btn sm soft" type="button" data-act="water" data-ml="500">+ 500</button><button class="btn sm ghost" type="button" data-act="water" data-ml="-250" ${wml?'':'disabled'}>تراجع</button></div></div>
+    </div></section>
+    <section class="panel"><div class="between"><h3>أدوية اليوم</h3><button class="linkish small" type="button" data-act="go" data-v="me">إدارة</button></div>
+      ${doses.length?doses.map(d=>`<div class="dose"><span class="t"><bdi>${d.t}</bdi></span><span class="n"><b>${esc(d.m.name)}</b><small>${esc(d.m.dose||'')}${!d.taken&&d.late?' · <span style="color:var(--warn)">فات الموعد</span>':''}</small></span><button type="button" class="tick ${d.taken?'on':''}" data-act="dose" data-key="${esc(d.key)}" aria-pressed="${d.taken}" aria-label="${d.taken?'أُخذت':'علّم كمأخوذة'}">${ic('check')}</button></div>`).join(''):`<p class="hint">لا أدوية مجدولة. أضف أدويتك من «ملفي» لتصلك التذكيرات.</p>`}
+    </section>
+  </div>
+  <h2 class="sec">آخر الفحوصات</h2>
+  ${tests.length?`<div class="tiles">${tests.map(r=>{const M=MET[r.k],c=M.cls(r.v);return `<button type="button" class="tile" data-act="logk" data-k="${r.k}"><span class="ic">${ic(M.ic)}</span><b>${M.n}</b><span class="d"><bdi>${esc(M.val(r.v))}</bdi> ${esc(unitOf(r.k))}${M.sub?' · '+esc(M.sub(r.v)):''}</span><span class="ft"><span class="chip ${c.lv}">${esc(c.t)}</span>${ago(r.ts)}</span></button>`}).join('')}</div>`:`<div class="panel"><p class="hint" style="margin:0">لم تُجرِ فحوصات بعد. افتح «افحص» لتجربة فحص البصر والسمع ورد الفعل.</p></div>`}
+  <p class="foot">عيادة الجيب أداة للمتابعة والتوعية الصحية، وليست جهازاً طبياً معتمداً، ولا تغني عن الطبيب. في الحالات الطارئة اتصل بالإسعاف (${esc(emNum())}).</p>
+  </div>`;
+}
+
+const TESTS=[
+ {id:'heart',g:'s',n:'نبض القلب',d:'إصبعك على الكاميرا الخلفية والفلاش 30 ثانية',need:'الكاميرا',ic:'heart',k:'hr',p:1},
+ {id:'breath',g:'s',n:'معدل التنفس',d:'الهاتف على بطنك وأنت مستلقٍ دقيقة واحدة',need:'حساس الحركة',ic:'lungs',k:'rr'},
+ {id:'tremor',g:'s',n:'ثبات اليد',d:'امسك الهاتف بذراع ممدودة 15 ثانية',need:'حساس الحركة',ic:'wave',k:'tremor'},
+ {id:'react',g:'s',n:'سرعة رد الفعل',d:'المس الشاشة لحظة تحوّلها إلى الأخضر',need:'اللمس',ic:'bolt',k:'react'},
+ {id:'acuity',g:'v',n:'حدة البصر',d:'حرف E بأحجام متدرجة لكل عين على بُعد 40 سم',need:'معايرة الشاشة',ic:'eye',k:'vision'},
+ {id:'color',g:'v',n:'تمييز الألوان',d:'6 لوحات نقطية تكشف ضعف الأحمر والأخضر',need:'سطوع كامل',ic:'palette',k:'color'},
+ {id:'amsler',g:'v',n:'شبكة أمسلر',d:'تكشف تشوّه الرؤية المركزية (الشبكية)',need:'لكل عين',ic:'grid',k:'amsler'},
+ {id:'astig',g:'v',n:'اللابؤرية',d:'هل تبدو بعض الخطوط أغمق من غيرها؟',need:'لكل عين',ic:'dial',k:'astig'},
+ {id:'hear',g:'v',n:'السمع',d:'نغمات من 500 إلى 8000 هرتز لكل أذن',need:'سماعات',ic:'ear',k:'hear'}
+];
+const MANUAL=['bp','glu','spo2','temp','wt','hr','rr'];
+function testTile(t){const r=last(t.k),c=r?MET[t.k].cls(r.v):null;
+  return `<button type="button" class="tile" data-act="test" data-t="${t.id}"><span class="ic ${t.p?'p':''}">${ic(t.ic)}</span><b>${t.n}</b><span class="d">${t.d}</span><span class="ft"><span class="need">${t.need}</span>${r?`<span class="chip ${c.lv}">${esc(MET[t.k].val(r.v))}</span>`:''}</span></button>`}
+function vMeasure(){
+  return `<div class="stack">
+  <h2 class="sec">بحساسات هاتفك<small>الكاميرا والحركة واللمس</small></h2>
+  <div class="tiles">${TESTS.filter(t=>t.g==='s').map(testTile).join('')}</div>
+  <h2 class="sec">البصر والسمع</h2>
+  <div class="tiles">${TESTS.filter(t=>t.g==='v').map(testTile).join('')}</div>
+  <h2 class="sec">سجّل قراءة من جهازك<small>جهاز الضغط والسكر والأكسجين والميزان</small></h2>
+  <div class="tiles">${MANUAL.map(k=>{const r=last(k),c=r?MET[k].cls(r.v):null;return `<button type="button" class="tile" data-act="add" data-k="${k}"><span class="ic">${ic(MET[k].ic)}</span><b>${MET[k].n}</b><span class="d">${r?`آخر قراءة <bdi>${esc(MET[k].val(r.v))}</bdi> ${esc(unitOf(k))}`:'لا توجد قراءة بعد'}</span><span class="ft">${r?`<span class="chip ${c.lv}">${esc(c.t)}</span>`:'<span class="need">إدخال يدوي</span>'}</span></button>`}).join('')}</div>
+  <p class="foot">الفحوصات المنزلية مؤشرات أولية للمتابعة ومقارنة نفسك عبر الوقت، ولا تعادل فحص العيادة.</p>
+  </div>`;
+}
+
+const MODS=['عمري 65 سنة أو أكثر','حامل','لدي مرض مزمن (قلب، سكري، كلى، رئة) أو ضعف في المناعة','الأعراض مستمرة منذ أكثر من أسبوع'];
+const SYM=[
+ {id:'chest',n:'ألم أو ضغط في الصدر',em:['ألم ضاغط أو عاصر أو ثقيل في الصدر','ألم يمتد إلى الذراع أو الكتف أو الفك أو الظهر','مصحوب بضيق نفس أو تعرّق بارد أو غثيان أو دوخة','ألم مفاجئ مع ضيق نفس بعد سفر طويل أو جراحة حديثة','إغماء أو شعور بقرب فقدان الوعي'],ur:['ألم يظهر مع المجهود ويختفي بالراحة','ألم يزداد مع التنفس العميق أو السعال','مصحوب بحمى أو سعال ببلغم'],self:'إذا كان الألم موضعياً ويزداد عند الضغط على مكانه أو مع حركة معينة، فقد يكون من العضلات أو الأضلاع. الراحة والكمادات الدافئة والمسكن البسيط قد تساعد. أي ألم صدر جديد غير واضح السبب يستحق تقييماً طبياً.'},
+ {id:'breath',n:'ضيق في التنفس',em:['صعوبة في إكمال جملة دون التوقف للتنفس','ازرقاق الشفاه أو الوجه','مصحوب بألم في الصدر','تورّم الوجه أو الشفاه أو اللسان','الأكسجين أقل من 92% إن قسته','بدأ فجأة وبشدة'],ur:['مصحوب بحمى وسعال','تورّم في الساقين أو الكاحلين','يزداد عند الاستلقاء أو يوقظك من النوم','صفير في الصدر لا يتحسن ببخاخك'],self:'إذا كان خفيفاً ومع زكام، فارتح واشرب السوائل وتجنب الدخان. جرّب التنفس البطيء: شهيق من الأنف 4 ثوانٍ وزفير من الفم 6 ثوانٍ. إن كان لديك بخاخ موصوف فاستخدمه حسب تعليمات طبيبك.'},
+ {id:'head',n:'صداع',em:['أسوأ صداع في حياتك وبدأ فجأة خلال ثوانٍ','مع ضعف أو تنميل في جهة واحدة، أو صعوبة في الكلام، أو ميلان في الوجه','مع تيبّس الرقبة وحمى','بعد إصابة أو ضربة على الرأس','مع تشوّش أو تشنّج أو فقدان للوعي','مع ضغط دم 180/120 أو أعلى'],ur:['صداع جديد بعد سن الخمسين','يزداد سوءاً يوماً بعد يوم','مع اضطراب في الرؤية أو ألم في العين','يوقظك من النوم أو يزداد مع السعال والانحناء'],self:'اشرب الماء، وارتح في غرفة هادئة قليلة الإضاءة، ونَم إن استطعت. يمكن استخدام مسكن مثل الباراسيتامول وفق النشرة. قلّل الكافيين والشاشات، ولاحظ إن كان الصداع يتكرر مع أطعمة أو مواقف معينة.'},
+ {id:'belly',n:'ألم في البطن',em:['ألم شديد ومفاجئ','البطن صلب ومؤلم جداً عند اللمس','قيء دموي أو بلون القهوة، أو براز أسود أو دموي','مع إغماء أو دوخة شديدة','احتمال حمل مع ألم ونزيف'],ur:['ألم يتركز أسفل البطن من الجهة اليمنى ويزداد','مع حمى','قيء مستمر يمنعك من الشرب','اصفرار في العينين أو الجلد','ألم مستمر منذ أكثر من 24 ساعة'],self:'تناول وجبات صغيرة وخفيفة، وتجنب الدهون والتوابل الحارة، واشرب السوائل. الكمادة الدافئة على البطن قد تريح التقلصات. تجنب مسكنات مثل الإيبوبروفين إذا كان الألم في المعدة.'},
+ {id:'fever',n:'حمّى وارتفاع حرارة',em:['تيبّس في الرقبة أو صداع شديد','طفح جلدي لا يختفي عند الضغط عليه بكأس زجاجي','تشوّش أو نعاس شديد يصعب معه الاستيقاظ','صعوبة في التنفس','الحرارة 40 درجة أو أكثر','رضيع عمره أقل من 3 أشهر وحرارته 38 أو أكثر'],ur:['الحمى مستمرة أكثر من 3 أيام','مع حرقة في التبول أو ألم في الخاصرة','مع ألم شديد في الحلق أو الأذن','عائد من سفر حديث'],self:'اشرب سوائل كثيرة، وارتح، والبس ملابس خفيفة. خافض الحرارة مثل الباراسيتامول وفق النشرة يخفف الانزعاج. سجّل حرارتك كل بضع ساعات في التطبيق لمتابعة التغيّر.'},
+ {id:'cold',n:'سعال أو زكام أو التهاب حلق',em:['صعوبة شديدة في التنفس','سعال دم بكمية كبيرة','عدم القدرة على بلع اللعاب'],ur:['صعوبة في البلع أو في فتح الفم','سعال مستمر أكثر من 3 أسابيع','حمى عالية مع ألم في الصدر','دم في البلغم','صفير في الصدر'],self:'الراحة والسوائل الدافئة والعسل (للبالغين والأطفال فوق سنة) تخفف السعال. الغرغرة بماء دافئ وملح تريح الحلق. معظم نزلات البرد تتحسن خلال 7–10 أيام ولا تحتاج مضاداً حيوياً.'},
+ {id:'dizzy',n:'دوخة أو إغماء',em:['فقدت الوعي','مع ألم في الصدر أو خفقان شديد','مع ضعف أو تنميل في جهة واحدة أو صعوبة في الكلام','بعد ضربة على الرأس','مع براز أسود أو قيء دموي','سكر الدم أقل من 54 أو الشخص مشوّش'],ur:['دوخة تتكرر','مع دوران الغرفة وقيء مستمر','مع ضغط منخفض أو بعد بدء دواء جديد'],self:'اجلس أو استلقِ فوراً وارفع قدميك. اشرب الماء وتناول شيئاً إن لم تأكل منذ مدة. قِس ضغطك وسكرك إن أمكن وسجّلهما. انهض ببطء من الجلوس والنوم.'},
+ {id:'back',n:'ألم الظهر',em:['فقدان التحكم في البول أو البراز','تنميل في منطقة الأرداف أو بين الفخذين','ضعف يزداد في الساقين','بعد حادث أو سقوط قوي'],ur:['مع حمى','نقص وزن غير مبرر أو تاريخ إصابة بالسرطان','ألم ليلي شديد لا يخف بالراحة','ألم ينتشر إلى الساق مع تنميل'],self:'استمر في الحركة الخفيفة بدل الراحة التامة في السرير. الكمادات الدافئة والمسكنات البسيطة وفق النشرة تساعد. معظم آلام الظهر تتحسن خلال أسابيع قليلة.'},
+ {id:'gi',n:'قيء أو إسهال',em:['دم في القيء أو البراز، أو براز أسود','جفاف شديد: لا تبوّل منذ 8 ساعات، دوخة شديدة، فم جاف جداً','ألم بطن شديد','تشوّش أو نعاس شديد'],ur:['مستمر أكثر من يومين','لا تستطيع الاحتفاظ بالسوائل','حرارة 38.5 أو أكثر','لديك سكري وقراءاتك مضطربة'],self:'اشرب محلول معالجة الجفاف برشفات صغيرة ومتكررة. تناول أطعمة خفيفة مثل الأرز والموز والخبز المحمص حين تتحسن. اغسل يديك جيداً لتجنب نقل العدوى.'},
+ {id:'skin',n:'طفح جلدي أو حساسية',em:['تورّم في الوجه أو الشفاه أو اللسان','صعوبة في التنفس أو البلع','طفح لا يختفي بالضغط عليه مع حمى','بثور واسعة أو تقشّر مع تقرّحات في الفم أو العينين'],ur:['ينتشر بسرعة','مع حمى','جلد أحمر ساخن ومتورم ومؤلم','ظهر بعد بدء دواء جديد'],self:'تجنب ما تشك أنه سبب الحساسية، واستخدم كمادات باردة ومرطباً خالياً من العطور. مضاد الهيستامين المتاح دون وصفة قد يخفف الحكة وفق النشرة. لا تحك الجلد.'},
+ {id:'urine',n:'حرقة أو مشكلة في التبول',em:['عدم القدرة على التبول إطلاقاً مع ألم أسفل البطن'],ur:['حمى أو قشعريرة','ألم في الخاصرة أو الظهر','دم في البول','رجل وتتكرر عندك الأعراض'],self:'اشرب كمية جيدة من الماء ولا تؤجل التبول. إذا لم تتحسن الحرقة خلال يومين أو تكررت، فراجع الطبيب لتحليل البول.'},
+ {id:'palp',n:'خفقان أو نبض سريع',em:['مع ألم في الصدر','مع إغماء أو شعور بقرب الإغماء','مع ضيق نفس شديد','نبض أسرع من 150 وأنت مرتاح'],ur:['نبض غير منتظم جديد','نبض أسرع من 120 أثناء الراحة لفترة طويلة','لديك مرض في القلب'],self:'اجلس وتنفس ببطء. قلّل الكافيين ومشروبات الطاقة والتدخين. قِس نبضك بالكاميرا وسجّله، وأخبر طبيبك إن تكرر الخفقان.'},
+ {id:'tired',n:'تعب وإرهاق عام',em:['مع ألم في الصدر أو ضيق نفس','إغماء'],ur:['مع نقص وزن غير مبرر','مع عطش شديد وكثرة تبول','مستمر أكثر من أسبوعين','مع شحوب ودوخة أو نزيف'],self:'نَم 7–9 ساعات بانتظام، واشرب الماء، وتحرك يومياً ولو بالمشي 20 دقيقة. اختبار المزاج في التطبيق قد يكشف إن كان للتعب علاقة بالتوتر أو الاكتئاب.'}
+];
+function vDoctor(){
+  return `<div class="stack">
+  <section class="panel ai-card" ${aiSample?'':'hidden'}><span class="aic">${ic('chat')}</span><div style="min-width:0"><h3>تحدّث مع طبيب الجيب</h3><p class="hint" style="margin-top:0">صف ما تشعر به بكلماتك. يسألك أسئلة متابعة، ويقرأ ملفك وقراءاتك الأخيرة، ثم يقترح مستوى الإلحاح وما يمكنك فعله.</p><button class="btn" type="button" data-act="chat" style="margin-top:8px">${ic('chat')}ابدأ المحادثة</button></div></section>
+  <h2 class="sec">بماذا تشعر؟<small>اختر العَرَض لتعرف هل تحتاج طبيباً</small></h2>
+  <div class="sym">${SYM.map(s=>`<button type="button" data-act="sym" data-id="${s.id}">${s.n}</button>`).join('')}</div>
+  <h2 class="sec">الصحة النفسية<small>استبيانان معتمدان عالمياً</small></h2>
+  <div class="tiles">
+    ${[['phq','المزاج والاكتئاب','PHQ-9 · تسعة أسئلة عن الأسبوعين الماضيين','mood'],['gad','القلق والتوتر','GAD-7 · سبعة أسئلة عن الأسبوعين الماضيين','brain']].map(([k,n,d,i])=>{const r=last(k),c=r?MET[k].cls(r.v):null;return `<button type="button" class="tile" data-act="q" data-q="${k}"><span class="ic">${ic(i)}</span><b>${n}</b><span class="d">${d}</span><span class="ft">${r?`<span class="chip ${c.lv}">${r.v.score}${MET[k].u} · ${esc(c.t)}</span>`:'<span class="need">دقيقتان</span>'}</span></button>`}).join('')}
+  </div>
+  <h2 class="sec">إسعافات يجب أن تعرفها</h2>
+  ${knowHTML()}
+  </div>`;
+}
+function knowHTML(open){
+  return `<details class="panel know" ${open?'open':''}><summary>علامات الجلطة الدماغية</summary><div class="fast"><div><b>و</b>الوجه مائل</div><div><b>ذ</b>ذراع ضعيفة</div><div><b>ك</b>كلام متلعثم</div><div><b>و</b>وقت: اتصل فوراً</div></div><p class="hint">اطلب منه أن يبتسم ويرفع ذراعيه ويكرر جملة. أي خلل مفاجئ يعني الاتصال بالإسعاف (${esc(emNum())}) فوراً وتسجيل وقت بدء الأعراض.</p></details>
+  <details class="panel know"><summary>الإنعاش القلبي (للبالغين)</summary><ol><li>تأكد أن المكان آمن، وهزّ كتفيه وناده بصوت عالٍ.</li><li>إذا لم يستجب ولا يتنفس طبيعياً: اتصل بالإسعاف (${esc(emNum())}) وضع الهاتف على مكبر الصوت.</li><li>ضع يديك وسط الصدر واضغط بقوة وسرعة: 100–120 ضغطة في الدقيقة، بعمق 5–6 سم.</li><li>اسمح للصدر بالارتفاع الكامل بين الضغطات، ولا تتوقف حتى يصل المسعفون أو جهاز الصدمات.</li></ol></details>
+  <details class="panel know"><summary>الاختناق بجسم غريب</summary><ol><li>إذا كان يستطيع السعال فشجّعه على السعال بقوة.</li><li>إذا لم يستطع الكلام أو التنفس: 5 ضربات قوية بين لوحي الكتف ثم 5 ضغطات على البطن فوق السرة إلى الداخل والأعلى.</li><li>كرر حتى يخرج الجسم، واتصل بالإسعاف إن فقد الوعي وابدأ الإنعاش.</li></ol></details>
+  <details class="panel know"><summary>هبوط السكر</summary><ul><li>العلامات: رجفة وتعرّق وجوع ودوخة وتشوّش.</li><li>تناول 15 غراماً من سكر سريع (نصف كوب عصير، أو 3–4 ملاعق صغيرة سكر)، وأعد القياس بعد 15 دقيقة.</li><li>لا تعطِ أي شيء بالفم لشخص فاقد الوعي؛ اتصل بالإسعاف.</li></ul></details>`;
+}
+
+function vLog(){
+  const have=Object.keys(MET).filter(k=>S.readings.some(r=>r.k===k));
+  if(!have.includes(logK))logK=have[0]||'bp';
+  const M=MET[logK],rs=byK(logK),numeric=NUMERIC.includes(logK);
+  let body='';
+  if(!rs.length)body=`<p class="hint">لا توجد قراءات بعد.</p>`;
+  else{
+    const lr=rs[rs.length-1],c=M.cls(lr.v);
+    body=`<div class="between"><div><span class="eyebrow small muted">آخر قراءة · ${fDT.format(lr.ts)}</span><div class="big" style="margin:0"><bdi>${esc(M.val(lr.v))}</bdi> <small>${esc(unitOf(logK))}</small></div></div><span class="chip ${c.lv}">${esc(c.t)}</span></div>`;
+    if(numeric){
+      const pts=rs.slice(-30).map(r=>({x:r.ts,ys:M.ser(r.v)}));
+      const band=typeof M.band==='function'?M.band():M.band;
+      body+=`<div class="chart">${chartSVG(pts,{band,refs:M.refs})}</div>`;
+      if(M.sn)body+=`<div class="legend"><span><i style="background:var(--accent)"></i>${M.sn[0]}</span><span><i style="background:var(--pulse)"></i>${M.sn[1]}</span><span><i style="background:var(--ok);height:1px"></i>الحد المثالي 120/80</span></div>`;
+      else if(band)body+=`<div class="legend"><span><i style="background:var(--ok-soft);height:10px"></i>النطاق الطبيعي</span></div>`;
+      const r30=rs.filter(r=>Date.now()-r.ts<30*D),ser=r30.map(r=>M.ser(r.v));
+      if(ser.length){const f=(i,fn)=>fn(...ser.map(s=>s[i])),avg=i=>ser.reduce((a,s)=>a+s[i],0)/ser.length;
+        const dec=['temp','tremor'].includes(logK)?(logK==='tremor'?2:1):(logK==='wt'||(logK==='glu'&&P().gluUnit==='mmol')?1:0);
+        const fm=x=>(+x).toFixed(dec),two=M.sn?(fn=>fm(fn(0))+'/'+fm(fn(1))):(fn=>fm(fn(0)));
+        body+=`<div class="stats"><div class="stat"><span>متوسط 30 يوماً</span><b>${two(avg)}</b></div><div class="stat"><span>الأدنى</span><b>${two(i=>f(i,Math.min))}</b></div><div class="stat"><span>الأعلى</span><b>${two(i=>f(i,Math.max))}</b></div><div class="stat"><span>عدد القراءات</span><b>${ser.length}</b></div></div>`}
+    }
+  }
+  return `<div class="stack">
+  <h2 class="sec">سجلّك الصحي</h2>
+  <div class="mchips">${(have.length?have:['bp']).map(k=>`<button type="button" class="mchip" data-act="logk" data-k="${k}" aria-pressed="${k===logK}">${MET[k].n}<small>${S.readings.filter(r=>r.k===k).length}</small></button>`).join('')}</div>
+  <section class="panel">${body}
+    <div class="row" style="margin-top:12px">${MANUAL.includes(logK)?`<button class="btn sm" type="button" data-act="add" data-k="${logK}">${ic('plus')}أضف قراءة</button>`:''}${TESTS.find(t=>t.k===logK)?`<button class="btn sm soft" type="button" data-act="test" data-t="${TESTS.find(t=>t.k===logK).id}">أعد الفحص</button>`:''}</div>
+  </section>
+  ${rs.length?`<section class="panel"><h3>كل القراءات</h3><div class="rlist">${rs.slice().reverse().map(r=>{const c=M.cls(r.v);return `<div class="rd"><span class="v"><bdi>${esc(M.val(r.v))}</bdi></span><span class="m"><b>${fDT.format(r.ts)}</b>${M.sub&&M.sub(r.v)?' · '+esc(M.sub(r.v)):''}${r.v.src==='cam'?' · بالكاميرا':''}<br><span class="chip ${c.lv}" style="margin-top:3px">${esc(c.t)}</span></span><button type="button" class="x" data-act="del" data-id="${r.id}" aria-label="حذف القراءة">${ic('trash')}</button></div>`}).join('')}</div></section>`:''}
+  </div>`;
+}
+function niceStep(raw){const p=10**Math.floor(Math.log10(raw||1)),n=raw/p;return (n<1.5?1:n<3?2:n<7?5:10)*p}
+function chartSVG(pts,o){
+  if(pts.length<2)return `<p class="hint">تحتاج قراءتين على الأقل لرسم المنحنى.</p>`;
+  const W=340,H=176,L=36,R=12,T=12,B=26;
+  const xs=pts.map(p=>p.x),x0=Math.min(...xs),x1=Math.max(...xs);
+  let ys=pts.flatMap(p=>p.ys.filter(v=>v!=null));const allY=[...ys];if(o.band)allY.push(...o.band);if(o.refs)allY.push(...o.refs);
+  let y0=Math.min(...allY),y1=Math.max(...allY);const pad=(y1-y0)*0.12||1;y0-=pad;y1+=pad;
+  const st=niceStep((y1-y0)/4),ticks=[];for(let t=Math.ceil(y0/st)*st;t<=y1;t+=st)ticks.push(+t.toFixed(6));
+  const X=v=>L+(W-L-R)*(v-x0)/((x1-x0)||1),Y=v=>T+(H-T-B)*(1-(v-y0)/(y1-y0));
+  const dec=st<1?(st<0.1?2:1):0;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="منحنى القراءات">`;
+  if(o.band)s+=`<rect class="band" x="${L}" y="${Y(Math.min(o.band[1],y1)).toFixed(1)}" width="${W-L-R}" height="${(Y(Math.max(o.band[0],y0))-Y(Math.min(o.band[1],y1))).toFixed(1)}"/>`;
+  ticks.forEach(t=>{s+=`<line class="gl" x1="${L}" x2="${W-R}" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}"/><text class="tk" x="${L-6}" y="${(Y(t)+3.5).toFixed(1)}" text-anchor="end">${t.toFixed(dec)}</text>`});
+  (o.refs||[]).forEach(r=>{s+=`<line class="ref" x1="${L}" x2="${W-R}" y1="${Y(r).toFixed(1)}" y2="${Y(r).toFixed(1)}"/>`});
+  const cols=['var(--accent)','var(--pulse)'];const nser=pts[0].ys.length;
+  for(let i=0;i<nser;i++){
+    const P2=pts.filter(p=>p.ys[i]!=null).map(p=>[X(p.x),Y(p.ys[i])]);
+    if(i===0&&nser===1)s+=`<path d="M${P2[0][0].toFixed(1)} ${Y(y0).toFixed(1)} ${P2.map(q=>'L'+q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' ')} L${P2[P2.length-1][0].toFixed(1)} ${Y(y0).toFixed(1)}Z" fill="${cols[0]}" fill-opacity=".10"/>`;
+    s+=`<polyline points="${P2.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ')}" fill="none" stroke="${cols[i]}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    P2.forEach((q,j)=>{s+=`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${j===P2.length-1?4.2:2.2}" fill="${j===P2.length-1?cols[i]:'var(--surface)'}" stroke="${cols[i]}" stroke-width="1.6"/>`});
+  }
+  s+=`<text class="tk" x="${L}" y="${H-6}" text-anchor="start">${fD.format(x0)}</text><text class="tk" x="${W-R}" y="${H-6}" text-anchor="end">${fD.format(x1)}</text></svg>`;
+  return s;
+}
+
+function bodyNums(){
+  const p=P(),h=+p.height,w=+p.weight,a=age(),sex=p.sex;
+  if(!(h>50)||!(w>10))return `<p class="hint" style="margin:0">أدخل طولك ووزنك لحساب مؤشراتك.</p>`;
+  const hm=h/100,bmi=w/(hm*hm),cb=cBMI(bmi),rows=[];
+  rows.push(['مؤشر كتلة الجسم',bmi.toFixed(1),`<span class="chip ${cb.lv}">${cb.t}</span>`]);
+  rows.push(['الوزن الصحي لطولك',(18.5*hm*hm).toFixed(0)+'–'+(24.9*hm*hm).toFixed(0)+' كغ','']);
+  if(a&&(sex==='m'||sex==='f')){const bmr=10*w+6.25*h-5*a+(sex==='m'?5:-161),tdee=bmr*(+p.activity||1.375);
+    rows.push(['الحرق الأساسي (BMR)',Math.round(bmr)+' سعرة','معادلة ميفلين']);
+    rows.push(['احتياجك اليومي',Math.round(tdee)+' سعرة','لإنقاص الوزن: '+Math.round(tdee-500)])}
+  rows.push(['الماء اليومي',(Math.round(w*33/250)*250/1000).toFixed(2).replace(/0$/,'')+' لتر','33 مل لكل كغ']);
+  if(a){const mx=220-a;rows.push(['أقصى نبض',mx+' ن/د','220 − العمر']);rows.push(['نبض حرق الدهون',Math.round(mx*.6)+'–'+Math.round(mx*.7)+' ن/د','60–70%']);rows.push(['نبض اللياقة القلبية',Math.round(mx*.7)+'–'+Math.round(mx*.85)+' ن/د','70–85%'])}
+  const wa=+p.waist,ne=+p.neck,hi=+p.hip;
+  if(wa>30){const r=wa/h;rows.push(['نسبة الخصر إلى الطول',r.toFixed(2),`<span class="chip ${r<0.5?'ok':r<0.6?'warn':'bad'}">${r<0.5?'صحية':r<0.6?'مرتفعة':'مرتفعة جداً'}</span>`])}
+  if(wa>30&&ne>15&&(sex==='m'||(sex==='f'&&hi>30))){
+    let bf=sex==='m'?495/(1.0324-0.19077*Math.log10(wa-ne)+0.15456*Math.log10(h))-450:495/(1.29579-0.35004*Math.log10(wa+hi-ne)+0.22100*Math.log10(h))-450;
+    if(isFinite(bf)&&bf>2&&bf<70){const cut=sex==='m'?[6,14,18,25]:[14,21,25,32];const lab=bf<cut[0]?['رياضي جداً','ok']:bf<cut[1]?['رياضي','ok']:bf<cut[2]?['لياقة جيدة','ok']:bf<cut[3]?['متوسط','warn']:['مرتفع','bad'];
+      rows.push(['نسبة الدهون (طريقة البحرية)',bf.toFixed(1)+'%',`<span class="chip ${lab[1]}">${lab[0]}</span>`])}}
+  return `<div class="kv">${rows.map(r=>`<div><span>${r[0]}</span><span><b>${r[1]}</b>${r[2]?`<em>${r[2]}</em>`:''}</span></div>`).join('')}</div>`;
+}
+function fld(id,label,val,attrs=''){return `<div class="field"><label for="p-${id}">${label}</label><input id="p-${id}" data-p="${id}" value="${esc(val)}" ${attrs}></div>`}
+function vMe(){
+  const p=P(),canNotify=!IN_VIEWER&&'Notification' in window;
+  return `<div class="stack">
+  <h2 class="sec">ملفي الطبي</h2>
+  <section class="panel"><div class="form">
+    ${fld('name','الاسم',p.name,'autocomplete="name"')}
+    <div class="field"><span class="lbl">الجنس</span><div class="seg">${[['m','ذكر'],['f','أنثى']].map(([v,n])=>`<label><input type="radio" id="p-sex-${v}" name="p-sex" data-p="sex" value="${v}" ${p.sex===v?'checked':''}><span>${n}</span></label>`).join('')}</div></div>
+    ${fld('birthYear','سنة الميلاد',p.birthYear,'inputmode="numeric" placeholder="1990"')}
+    ${fld('height','الطول (سم)',p.height,'inputmode="decimal" placeholder="170"')}
+    ${fld('weight','الوزن (كغ)',p.weight,'inputmode="decimal" placeholder="70"')}
+    <div class="field"><label for="p-blood">فصيلة الدم</label><select id="p-blood" data-p="blood"><option value="">غير معروفة</option>${['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(b=>`<option ${p.blood===b?'selected':''}>${b}</option>`).join('')}</select></div>
+  </div>
+  <div class="form" style="margin-top:12px;grid-template-columns:1fr">
+    <div class="field"><label for="p-conditions">الأمراض المزمنة</label><textarea id="p-conditions" data-p="conditions" placeholder="مثال: ضغط، سكري النوع الثاني">${esc(p.conditions)}</textarea></div>
+    <div class="field"><label for="p-allergies">الحساسية</label><textarea id="p-allergies" data-p="allergies" placeholder="أدوية أو أطعمة تسبب لك حساسية">${esc(p.allergies)}</textarea></div>
+  </div>
+  <div class="form" style="margin-top:12px">${fld('contactName','جهة اتصال الطوارئ',p.contactName)}${fld('contactPhone','رقمها',p.contactPhone,'inputmode="tel" dir="ltr"')}</div>
+  <p class="hint">تُحفظ التعديلات تلقائياً.</p></section>
+
+  <h2 class="sec">جسمك بالأرقام</h2>
+  <section class="panel"><div id="bodyNums">${bodyNums()}</div>
+    <details style="margin-top:10px"><summary class="linkish small" style="cursor:pointer">قياسات إضافية لحساب الدهون والاحتياج</summary>
+    <div class="form" style="margin-top:10px">${fld('waist','محيط الخصر (سم)',p.waist,'inputmode="decimal"')}${fld('neck','محيط الرقبة (سم)',p.neck,'inputmode="decimal"')}${fld('hip','محيط الورك (سم)',p.hip,'inputmode="decimal"')}
+    <div class="field"><label for="p-activity">نشاطك اليومي</label><select id="p-activity" data-p="activity">${[['1.2','قليل الحركة'],['1.375','نشاط خفيف'],['1.55','نشاط متوسط'],['1.725','نشاط عالٍ'],['1.9','رياضي جداً']].map(([v,n])=>`<option value="${v}" ${p.activity===v?'selected':''}>${n}</option>`).join('')}</select></div></div></details>
+  </section>
+
+  <h2 class="sec">أدويتي</h2>
+  <section class="panel">
+    ${S.meds.length?S.meds.map(m=>`<div class="dose"><span class="n"><b>${esc(m.name)}</b><small>${esc(m.dose||'')} · ${(m.times||[]).map(t=>`<bdi>${t}</bdi>`).join('، ')}</small></span><button class="btn sm ${m.on?'soft':'ghost'}" type="button" data-act="medToggle" data-id="${m.id}">${m.on?'مفعّل':'متوقف'}</button><button type="button" class="x" data-act="medDel" data-id="${m.id}" aria-label="حذف ${esc(m.name)}">${ic('trash')}</button></div>`).join(''):'<p class="hint" style="margin-top:0">لم تضف أدوية بعد.</p>'}
+    <form id="medForm" class="form" style="margin-top:12px">
+      <div class="field"><label for="m-name">اسم الدواء</label><input id="m-name" required placeholder="مثال: أملوديبين"></div>
+      <div class="field"><label for="m-dose">الجرعة</label><input id="m-dose" placeholder="5 ملغ، حبة واحدة"></div>
+      <div class="field"><label for="m-t1">الموعد الأول</label><input id="m-t1" type="time" value="08:00" required></div>
+      <div class="field"><label for="m-t2">موعد ثانٍ (اختياري)</label><input id="m-t2" type="time"></div>
+      <div class="field"><label for="m-t3">موعد ثالث (اختياري)</label><input id="m-t3" type="time"></div>
+      <div class="field" style="align-self:end"><button class="btn" type="submit">${ic('plus')}أضف الدواء</button></div>
+    </form>
+    ${canNotify?`<div class="row" style="margin-top:12px"><button class="btn sm ghost" type="button" data-act="notif">${ic('bell')}${Notification.permission==='granted'?'التذكيرات مفعّلة':'فعّل تذكيرات الأدوية'}</button><span class="hint" style="margin:0">تصل التذكيرات والتطبيق مفتوح أو في الخلفية.</span></div>`:''}
+  </section>
+
+  <h2 class="sec">الإعدادات</h2>
+  <section class="panel"><div class="form">
+    <div class="field"><label for="p-country">الدولة</label><select id="p-country" data-p="country">${COUNTRIES.map(c=>`<option value="${c[0]}" ${p.country===c[0]?'selected':''}>${c[1]}</option>`).join('')}</select></div>
+    ${fld('emNum','رقم الإسعاف',p.emNum,'inputmode="tel" dir="ltr"')}
+    <div class="field"><span class="lbl">وحدة السكر</span><div class="seg">${[['mg','mg/dL'],['mmol','mmol/L']].map(([v,n])=>`<label><input type="radio" id="p-glu-${v}" name="p-glu" data-p="gluUnit" value="${v}" ${p.gluUnit===v?'checked':''}><span>${n}</span></label>`).join('')}</div></div>
+    <div class="field"><span class="lbl">معايرة الشاشة لفحص البصر</span><button class="btn sm ghost" type="button" data-act="calib">${ic('ruler')}${p.pxmm?'معايَرة · أعد المعايرة':'عايِر الآن'}</button></div>
+  </div></section>
+
+  <h2 class="sec">بياناتي</h2>
+  <section class="panel"><div class="row">
+    <button class="btn" type="button" data-act="report">${ic('doc')}تقرير للطبيب</button>
+    <button class="btn ghost" type="button" data-act="export">${ic('down')}نسخة احتياطية</button>
+    <button class="btn ghost" type="button" data-act="import">${ic('up')}استعادة</button>
+    <button class="btn ghost" type="button" data-act="wipe" style="color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,transparent)">${ic('trash')}حذف كل البيانات</button>
+  </div><p class="hint">${remote?'تُحفظ بياناتك بشكل خاص في حسابك، ولا يراها غيرك.':'تُحفظ بياناتك على هذا الجهاز فقط ولا تُرسل إلى أي خادم. احتفظ بنسخة احتياطية دورياً.'}</p></section>
+  <p class="foot">عيادة الجيب ليست جهازاً طبياً معتمداً. القياسات بالكاميرا والحساسات تقريبية وتتأثر بالإضاءة والحركة ونوع الهاتف. لا تغيّر علاجك بناءً على التطبيق دون استشارة طبيبك.</p>
+  </div>`;
+}
+
+/* ---------- add reading ---------- */
+function numIn(id,label,ph,attrs='inputmode="decimal"'){return `<div class="field"><label for="${id}">${label}</label><input id="${id}" class="numin" ${attrs} placeholder="${ph}" autocomplete="off"></div>`}
+const getN=id=>{const v=($('#'+id)||{}).value;if(v==null||String(v).trim()==='')return null;const n=parseFloat(String(v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace('٫','.').replace(',','.'));return isFinite(n)?n:NaN};
+function sheetAdd(k){
+  const forms={
+    bp:`<div class="form">${numIn('f-sys','الانقباضي (الرقم العلوي)','120','inputmode="numeric"')}${numIn('f-dia','الانبساطي (الرقم السفلي)','80','inputmode="numeric"')}${numIn('f-pul','النبض (اختياري)','72','inputmode="numeric"')}</div><p class="hint">اجلس مرتاحاً 5 دقائق، ظهرك مسنود وقدماك على الأرض، والذراع بمستوى القلب. لا تتكلم أثناء القياس.</p>`,
+    glu:`<div class="form">${numIn('f-glu','السكر ('+gUnit()+')',P().gluUnit==='mmol'?'5.4':'95')}</div><div class="field"><span class="lbl">توقيت القياس</span><div class="seg">${Object.entries(CTX).map(([v,n],i)=>`<label><input type="radio" name="f-ctx" value="${v}" ${i===0?'checked':''}><span>${n}</span></label>`).join('')}</div></div><p class="hint">صائم = دون طعام 8 ساعات على الأقل.</p>`,
+    spo2:`<div class="form">${numIn('f-spo','تشبع الأكسجين (%)','98','inputmode="numeric"')}${numIn('f-pul','النبض (اختياري)','72','inputmode="numeric"')}</div><p class="hint">استخدم جهاز قياس الأكسجين على الإصبع، ويدك دافئة وثابتة، وانتظر حتى تستقر القراءة.</p>`,
+    temp:`<div class="form">${numIn('f-tmp','الحرارة (°م)','36.8')}</div><p class="hint">يمكنك إدخال الفهرنهايت وسيُحوَّل تلقائياً.</p>`,
+    wt:`<div class="form">${numIn('f-wt','الوزن (كغ)',P().weight||'70')}</div><p class="hint">تزن صباحاً بعد دخول الحمام وقبل الأكل للحصول على قراءات قابلة للمقارنة.</p>`,
+    hr:`<div class="form">${numIn('f-hr','النبض (نبضة/د)','72','inputmode="numeric"')}</div><p class="hint">عُدّ نبضك في المعصم 30 ثانية واضربه في 2، أو استخدم <button type="button" class="linkish" data-act="test" data-t="heart">القياس بالكاميرا</button>.</p>`,
+    rr:`<div class="form">${numIn('f-rr','الأنفاس في الدقيقة','16','inputmode="numeric"')}</div><p class="hint">عُدّ مرات ارتفاع صدرك خلال 30 ثانية واضربها في 2، أو استخدم <button type="button" class="linkish" data-act="test" data-t="breath">القياس بالحساس</button>.</p>`
+  };
+  openSheet('سجّل '+MET[k].n,`<form id="addF" class="sheet-b" novalidate>${forms[k]}<p class="err" id="addErr"></p><button class="btn block" type="submit">احفظ القراءة</button></form><div id="addOut"></div>`,b=>{
+    const f=$('#addF',b);setTimeout(()=>{const i=$('input.numin',f);if(i)i.focus()},120);
+    f.addEventListener('submit',e=>{e.preventDefault();const err=$('#addErr',b);err.textContent='';
+      const bad=m=>{err.textContent=m;return null};let v=null,note='';
+      if(k==='bp'){const s=getN('f-sys'),d=getN('f-dia'),p=getN('f-pul');if(!(s>=60&&s<=260))return bad('أدخل الرقم العلوي بين 60 و260.');if(!(d>=30&&d<=160))return bad('أدخل الرقم السفلي بين 30 و160.');if(d>=s)return bad('الرقم العلوي يجب أن يكون أكبر من السفلي.');v={sys:Math.round(s),dia:Math.round(d)};if(p>=30&&p<=220)v.pulse=Math.round(p)}
+      if(k==='glu'){let g=getN('f-glu');const mm=P().gluUnit==='mmol';if(!(g>0))return bad('أدخل قيمة السكر.');const mg=mm?g*18:g;if(!(mg>=20&&mg<=600))return bad(mm?'أدخل قيمة بين 1.1 و33.3.':'أدخل قيمة بين 20 و600.');v={mg:Math.round(mg),ctx:($('input[name="f-ctx"]:checked',b)||{}).value||'r'}}
+      if(k==='spo2'){const s=getN('f-spo');if(!(s>=60&&s<=100))return bad('أدخل نسبة بين 60 و100.');v={pct:Math.round(s)}}
+      if(k==='temp'){let t=getN('f-tmp');if(t>=90&&t<=110){t=(t-32)*5/9;note='حُوّلت من فهرنهايت.'}if(!(t>=33&&t<=43))return bad('أدخل حرارة بين 33 و43 درجة مئوية.');v={c:Math.round(t*10)/10}}
+      if(k==='wt'){const w=getN('f-wt');if(!(w>=20&&w<=300))return bad('أدخل وزناً بين 20 و300 كغ.');v={kg:Math.round(w*10)/10}}
+      if(k==='hr'){const h=getN('f-hr');if(!(h>=30&&h<=220))return bad('أدخل نبضاً بين 30 و220.');v={bpm:Math.round(h),src:'man'}}
+      if(k==='rr'){const r=getN('f-rr');if(!(r>=4&&r<=60))return bad('أدخل قيمة بين 4 و60.');v={rpm:Math.round(r),src:'man'}}
+      if(!v)return;
+      addReading(k,v);
+      if((k==='bp'||k==='spo2')){const p=getN('f-pul');if(p>=30&&p<=220)addReading('hr',{bpm:Math.round(p),src:k})}
+      const c=MET[k].cls(v);f.hidden=true;
+      $('#addOut',b).innerHTML=`<div class="sheet-b">${resultHTML(c,MET[k].val(v),unitOf(k))}${note?`<p class="hint">${note}</p>`:''}<div class="row"><button class="btn" type="button" data-act="close">تم</button><button class="btn ghost" type="button" data-act="add" data-k="${k}">قراءة أخرى</button></div></div>`;
+    });
+  });
+}
+function sheetAddPick(){
+  openSheet('سجّل قراءة',`<div class="tiles">${MANUAL.map(k=>`<button type="button" class="tile" data-act="add" data-k="${k}"><span class="ic">${ic(MET[k].ic)}</span><b>${MET[k].n}</b><span class="d">${esc(unitOf(k))}</span></button>`).join('')}</div>`);
+}
+
+/* ---------- test: heart (camera PPG) ---------- */
+function testHeart(b){
+  b.innerHTML=`<div class="stage">
+    <div class="hr-top"><div class="hr-cam"><video id="hrVid" playsinline muted autoplay></video></div><div class="bignum"><bdi id="hrBpm">--</bdi><small>نبضة في الدقيقة</small></div>${ic('heart','heart')}</div>
+    <canvas class="wave" id="hrWave" aria-hidden="true"></canvas>
+    <div class="prog"><i id="hrProg"></i></div>
+    <div class="status" id="hrSt">اضغط «ابدأ» ثم غطِّ الكاميرا الخلفية والفلاش بطرف إصبعك.</div>
+  </div>
+  <ol class="steps"><li>اجلس واسترح دقيقة قبل القياس.</li><li>غطِّ العدسة والفلاش معاً بطرف السبابة، بلمسة خفيفة دون ضغط.</li><li>ثبّت يدك ولا تتكلم حتى يكتمل الشريط (30 ثانية).</li></ol>
+  <button class="btn block" type="button" id="hrGo">${ic('heart')}ابدأ القياس</button>
+  <div id="hrOut"></div>`;
+  const vid=$('#hrVid',b),st=$('#hrSt',b),bpmEl=$('#hrBpm',b),prog=$('#hrProg',b),wave=$('#hrWave',b),goBtn=$('#hrGo',b),out=$('#hrOut',b),heart=$('.heart',b);
+  const DUR=30,WARM=2.5,CAP=150,col=cssVar('--pulse')||'#cf3653';
+  let stream=null,stopped=true,t0=null,miss=0,ema1=null,ema2=0,lastEst=0;let ts=[],R=[],G=[],disp=[];
+  const cv=document.createElement('canvas');cv.width=40;cv.height=30;const cx=cv.getContext('2d',{willReadFrequently:true});
+  function stopCam(){stopped=true;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}try{vid.srcObject=null}catch(e){}}
+  function reset(){t0=null;ts=[];R=[];G=[];disp=[];ema1=null;ema2=0;prog.style.width='0';bpmEl.textContent='--';heart.classList.remove('beat')}
+  function estimate(a,bnd){
+    const idx=[];for(let i=0;i<ts.length;i++)if(ts[i]>=a&&ts[i]<=bnd)idx.push(i);if(idx.length<60)return null;
+    const t=idx.map(i=>ts[i]);let best=null;
+    for(const ch of [R,G]){const v=idx.map(i=>ch[i]);const mean=v.reduce((x,y)=>x+y,0)/v.length;if(mean>252||mean<8)continue;
+      const y=bandpass(resample(t,v,30),30,0.7,4);const e=autoRate(y,30,40,180);if(e&&(!best||e.q>best.q))best=e}
+    return best;
+  }
+  function frame(){
+    if(stopped)return;
+    if(vid.readyState>=2&&vid.videoWidth){
+      cx.drawImage(vid,0,0,40,30);const d=cx.getImageData(8,6,24,18).data;let r=0,g=0,bl=0;const n=d.length/4;
+      for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];bl+=d[i+2]}r/=n;g/=n;bl/=n;
+      const now=performance.now()/1000,finger=r>55&&r>g*1.45&&r>bl*1.45;
+      if(!finger){if(++miss>8&&t0!==null){reset();st.textContent='ابتعد إصبعك. أعد وضعه على الكاميرا والفلاش معاً.'}else if(t0===null)st.textContent='ضع طرف إصبعك على الكاميرا الخلفية والفلاش…'}
+      else{miss=0;if(t0===null){t0=now;st.textContent='ممتاز، ثبّت إصبعك… جارٍ القياس'}
+        const el=now-t0;ts.push(el);R.push(r);G.push(g);
+        const sig=r>250?g:r;if(ema1===null)ema1=sig;ema1+=(sig-ema1)*0.05;const hp=sig-ema1;ema2+=(hp-ema2)*0.4;disp.push(-ema2);if(disp.length>CAP)disp.shift();drawWave(wave,disp,CAP,col);
+        prog.style.width=clamp(el/DUR*100,0,100)+'%';
+        if(el>WARM+7&&now-lastEst>1){lastEst=now;const e=estimate(Math.max(WARM,el-10),el);if(e&&e.q>0.3){bpmEl.textContent=Math.round(e.rate);heart.style.setProperty('--beat',(60/e.rate).toFixed(2)+'s');heart.classList.add('beat')}}
+        if(el>=DUR){finish();return}}
+    }
+    if(vid.requestVideoFrameCallback)vid.requestVideoFrameCallback(frame);else requestAnimationFrame(frame);
+  }
+  function finish(){
+    const e=estimate(WARM,DUR);stopCam();goBtn.hidden=false;goBtn.disabled=false;goBtn.innerHTML=ic('heart')+'قِس مرة أخرى';heart.classList.remove('beat');
+    if(!e||e.q<0.32){st.textContent='';out.innerHTML=`<div class="banner warn">${ic('alert')}<div><b>لم نلتقط نبضاً واضحاً</b><p>جرّب مرة أخرى: لمسة خفيفة دون ضغط، وغطِّ الفلاش والعدسة معاً، وثبّت يدك. الأيدي الباردة تضعف الإشارة؛ دفّئها أولاً.</p></div></div>`;bpmEl.textContent='--';return}
+    const bpm=Math.round(e.rate),c=cHR(bpm);bpmEl.textContent=bpm;st.textContent='جودة الإشارة: '+(e.q>0.7?'ممتازة':e.q>0.5?'جيدة':'مقبولة');
+    out.innerHTML=`<div class="sheet-b">${resultHTML(c,bpm,'نبضة/د')}<div class="row"><button class="btn" type="button" id="hrSave">احفظ في السجل</button></div></div>`;
+    $('#hrSave',out).onclick=ev=>{addReading('hr',{bpm,src:'cam',q:+e.q.toFixed(2)});ev.target.disabled=true;ev.target.textContent='حُفظت';toast('حُفظت القراءة')};
+  }
+  goBtn.onclick=async()=>{
+    out.innerHTML='';reset();goBtn.disabled=true;st.textContent='جارٍ تشغيل الكاميرا…';
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){camFail();return}
+    try{stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:320},height:{ideal:240},frameRate:{ideal:30}}})}catch(e){camFail(e);return}
+    const track=stream.getVideoTracks()[0];let torch=false;
+    try{const caps=track.getCapabilities&&track.getCapabilities();if(caps&&caps.torch){await track.applyConstraints({advanced:[{torch:true}]});torch=true}}catch(e){}
+    vid.srcObject=stream;try{await vid.play()}catch(e){}
+    stopped=false;goBtn.hidden=true;st.textContent=torch?'ضع طرف إصبعك على الكاميرا والفلاش…':'لم يتوفر الفلاش في هذا المتصفح. قف قرب ضوء قوي وغطِّ الكاميرا بإصبعك…';
+    frame();
+  };
+  function camFail(e){
+    goBtn.disabled=false;st.textContent='';
+    const denied=e&&(e.name==='NotAllowedError'||e.name==='SecurityError');
+    out.innerHTML=`<div class="banner warn">${ic('alert')}<div><b>الكاميرا غير متاحة</b><p>${IN_VIEWER?'الكاميرا لا تعمل داخل هذا العرض. افتح التطبيق مباشرة في متصفح هاتفك (Chrome أو Safari) لقياس النبض بالكاميرا.':denied?'لم يُسمح باستخدام الكاميرا. اسمح بها من إعدادات المتصفح للموقع ثم أعد المحاولة.':'لم نتمكن من تشغيل الكاميرا الخلفية على هذا الجهاز.'}</p><div class="row" style="margin-top:8px"><button class="btn sm" type="button" data-act="add" data-k="hr">أدخل النبض يدوياً</button></div></div></div>`;
+  }
+  return stopCam;
+}
+
+/* ---------- test: breathing ---------- */
+function testBreath(b){
+  b.innerHTML=`<div class="field"><span class="lbl">طريقة القياس</span><div class="seg"><label><input type="radio" name="br-m" value="s" checked><span>حساس الحركة</span></label><label><input type="radio" name="br-m" value="t"><span>بالنقر مع كل نفَس</span></label></div></div>
+  <div id="brBody"></div>`;
+  let live=true,listener=null,timer=0;
+  const stopAll=()=>{if(listener)removeEventListener('devicemotion',listener);listener=null;clearInterval(timer)};
+  const body=$('#brBody',b);
+  function sensorUI(){
+    stopAll();
+    body.innerHTML=`<div class="stage"><div class="bignum"><bdi id="brN">--</bdi><small>نفَس في الدقيقة</small></div><canvas class="wave" id="brWave"></canvas><div class="prog"><i id="brProg"></i></div><div class="status" id="brSt">استلقِ على ظهرك وضع الهاتف على بطنك فوق السرة، والشاشة إلى الأعلى.</div></div>
+    <ol class="steps"><li>استلقِ على ظهرك واسترح دقيقة.</li><li>بعد الضغط على «ابدأ» لديك 5 ثوانٍ لوضع الهاتف على بطنك.</li><li>تنفّس بشكل طبيعي ولا تتحرك لمدة 60 ثانية حتى تسمع الاهتزاز أو ترى النتيجة.</li></ol>
+    <button class="btn block" type="button" id="brGo">ابدأ القياس</button><div id="brOut"></div>`;
+    const st=$('#brSt',body),go=$('#brGo',body),out=$('#brOut',body),prog=$('#brProg',body),wave=$('#brWave',body),col=cssVar('--accent');
+    go.onclick=async()=>{
+      out.innerHTML='';go.disabled=true;
+      if(!(await motionPerm())||!(await motionProbe())){go.disabled=false;out.innerHTML=`<div class="banner warn">${ic('alert')}<div><b>حساس الحركة غير متاح</b><p>${NO_SENSOR()} يمكنك استخدام طريقة النقر بدلاً منه.</p></div></div>`;return}
+      for(let i=5;i>0;i--){if(!live)return;st.textContent='ضع الهاتف على بطنك الآن… '+i;await sleep(1000)}
+      const ts=[],ax=[],ay=[],az=[],disp=[];const t0=performance.now()/1000;let base=null;
+      listener=e=>{const a=e.accelerationIncludingGravity;if(!a||a.x==null)return;const t=performance.now()/1000-t0;ts.push(t);ax.push(a.x);ay.push(a.y);az.push(a.z);
+        if(base===null)base=a.z;base+=(a.z-base)*0.01;disp.push(a.z-base);if(disp.length>300)disp.shift()};
+      addEventListener('devicemotion',listener);st.textContent='تنفّس بشكل طبيعي…';
+      timer=setInterval(()=>{const el=performance.now()/1000-t0;prog.style.width=clamp(el/60*100,0,100)+'%';drawWave(wave,disp.filter((_,i)=>i%2===0),150,col);
+        if(el>=60){stopAll();try{navigator.vibrate&&navigator.vibrate(200)}catch(e){}done()}},200);
+      function done(){
+        go.disabled=false;go.textContent='قِس مرة أخرى';let best=null;
+        for(const ch of [ax,ay,az]){const y=bandpass(resample(ts,ch,10),10,0.1,0.9);const e=autoRate(y,10,6,40);if(e&&(!best||e.q>best.q))best=e}
+        if(!best||best.q<0.25){st.textContent='';out.innerHTML=`<div class="banner warn">${ic('alert')}<div><b>لم نلتقط تنفساً واضحاً</b><p>تأكد أن الهاتف مستقر على بطنك وأنك لا تتحرك، أو جرّب طريقة النقر.</p></div></div>`;return}
+        const rpm=Math.round(best.rate),c=cRR(rpm);$('#brN',body).textContent=rpm;st.textContent='';
+        out.innerHTML=`<div class="sheet-b">${resultHTML(c,rpm,'نفَس/د')}<button class="btn" type="button" id="brSave">احفظ في السجل</button></div>`;
+        $('#brSave',out).onclick=ev=>{addReading('rr',{rpm,src:'motion'});ev.target.disabled=true;ev.target.textContent='حُفظت';toast('حُفظت القراءة')};
+      }
+    };
+  }
+  function tapUI(){
+    stopAll();
+    body.innerHTML=`<p class="hint" style="margin:0">اجلس مرتاحاً وتنفّس بشكل طبيعي. المس الزر مع كل شهيق لمدة 30 ثانية.</p><button type="button" class="pad" id="brPad">المس للبدء</button><div class="prog"><i id="brProg"></i></div><div id="brOut"></div>`;
+    const pad=$('#brPad',body),prog=$('#brProg',body),out=$('#brOut',body);let n=0,t0=0,running=false;
+    pad.addEventListener('pointerdown',e=>{e.preventDefault();
+      if(!running&&!t0){running=true;t0=performance.now();n=0;pad.textContent='شهيق ← المس';timer=setInterval(()=>{const el=(performance.now()-t0)/1000;prog.style.width=clamp(el/30*100,0,100)+'%';if(el>=30){clearInterval(timer);running=false;finish()}},100);return}
+      if(running){n++;pad.textContent=n+' نفَس'}});
+    function finish(){const rpm=n*2,c=cRR(rpm);pad.textContent='انتهى';out.innerHTML=`<div class="sheet-b">${resultHTML(c,rpm,'نفَس/د')}<div class="row"><button class="btn" type="button" id="brSave">احفظ في السجل</button><button class="btn ghost" type="button" id="brRe">أعد</button></div></div>`;
+      $('#brSave',out).onclick=ev=>{addReading('rr',{rpm,src:'tap'});ev.target.disabled=true;ev.target.textContent='حُفظت';toast('حُفظت القراءة')};$('#brRe',out).onclick=tapUI}
+  }
+  $$('input[name="br-m"]',b).forEach(r=>r.onchange=()=>r.value==='s'?sensorUI():tapUI());
+  sensorUI();
+  return()=>{live=false;stopAll()};
+}
+
+/* ---------- test: tremor ---------- */
+function testTremor(b){
+  b.innerHTML=`<div class="stage"><div class="bignum"><bdi id="trN">--</bdi><small>م/ث² · شدة الاهتزاز</small></div><canvas class="wave" id="trWave"></canvas><div class="prog"><i id="trProg"></i></div><div class="status" id="trSt">اجلس، ومدّ ذراعك أمامك، وامسك الهاتف في راحة يدك دون أن تسند مرفقك.</div></div>
+  <ol class="steps"><li>اختر اليد التي تريد اختبارها.</li><li>بعد «ابدأ» لديك 3 ثوانٍ لمدّ ذراعك.</li><li>أبقِ يدك ثابتة قدر الإمكان لمدة 15 ثانية.</li></ol>
+  <div class="field"><span class="lbl">اليد</span><div class="seg"><label><input type="radio" name="tr-h" value="R" checked><span>اليمنى</span></label><label><input type="radio" name="tr-h" value="L"><span>اليسرى</span></label></div></div>
+  <button class="btn block" type="button" id="trGo">ابدأ الاختبار</button><div id="trOut"></div>`;
+  let live=true,listener=null,timer=0;const stopAll=()=>{if(listener)removeEventListener('devicemotion',listener);listener=null;clearInterval(timer)};
+  const st=$('#trSt',b),go=$('#trGo',b),out=$('#trOut',b),prog=$('#trProg',b),wave=$('#trWave',b),col=cssVar('--accent');
+  go.onclick=async()=>{
+    out.innerHTML='';go.disabled=true;
+    if(!(await motionPerm())||!(await motionProbe())){go.disabled=false;out.innerHTML=`<div class="banner warn">${ic('alert')}<div><b>حساس الحركة غير متاح</b><p>${NO_SENSOR()}</p></div></div>`;return}
+    for(let i=3;i>0;i--){if(!live)return;st.textContent='مدّ ذراعك… '+i;await sleep(1000)}
+    const ts=[],X=[],Y=[],Z=[],disp=[];const t0=performance.now()/1000;let gx=null,gy,gz;
+    listener=e=>{let a=e.acceleration,x,y,z;if(a&&a.x!=null){x=a.x;y=a.y;z=a.z}else{a=e.accelerationIncludingGravity;if(!a||a.x==null)return;if(gx===null){gx=a.x;gy=a.y;gz=a.z}gx+=(a.x-gx)*.1;gy+=(a.y-gy)*.1;gz+=(a.z-gz)*.1;x=a.x-gx;y=a.y-gy;z=a.z-gz}
+      const t=performance.now()/1000-t0;ts.push(t);X.push(x);Y.push(y);Z.push(z);disp.push(Math.hypot(x,y,z)*Math.sign(x||1));if(disp.length>150)disp.shift()};
+    addEventListener('devicemotion',listener);st.textContent='ثبّت يدك…';
+    timer=setInterval(()=>{const el=performance.now()/1000-t0;prog.style.width=clamp(el/15*100,0,100)+'%';drawWave(wave,disp,150,col);if(el>=15){stopAll();try{navigator.vibrate&&navigator.vibrate(150)}catch(e){}done()}},100);
+    function done(){
+      go.disabled=false;go.textContent='أعد الاختبار';
+      if(ts.length<100){out.innerHTML=`<div class="banner warn">${ic('alert')}<div><b>بيانات غير كافية</b><p>${NO_SENSOR()}</p></div></div>`;return}
+      const fs=50,ax=[X,Y,Z].map(ch=>{const r=resample(ts.map(t=>t),ch,fs).slice(fs);const m=movAvg(r,25);return r.map((v,i)=>v-m[i])});
+      const n=ax[0].length;let ss=0;for(let i=0;i<n;i++)ss+=ax[0][i]**2+ax[1][i]**2+ax[2][i]**2;const rms=Math.sqrt(ss/n);
+      let bestF=0,bestP=0;for(let f=3;f<=14;f+=0.25){let p=0;for(const s of ax){let re=0,im=0;for(let i=0;i<n;i++){const w=2*Math.PI*f*i/fs;re+=s[i]*Math.cos(w);im-=s[i]*Math.sin(w)}p+=re*re+im*im}if(p>bestP){bestP=p;bestF=f}}
+      const c=cTremor(rms),hand=($('input[name="tr-h"]:checked',b)||{}).value||'R';$('#trN',b).textContent=rms.toFixed(2);st.textContent='';
+      out.innerHTML=`<div class="sheet-b">${resultHTML(c,rms.toFixed(2),'م/ث²',`<p class="small muted">التردد السائد: <bdi>${bestF.toFixed(1)}</bdi> هرتز. النتيجة للمقارنة مع نفسك عبر الوقت، وليست تشخيصاً.</p>`)}<button class="btn" type="button" id="trSave">احفظ في السجل</button></div>`;
+      $('#trSave',out).onclick=ev=>{addReading('tremor',{rms:+rms.toFixed(3),hz:+bestF.toFixed(1),hand});ev.target.disabled=true;ev.target.textContent='حُفظت';toast('حُفظت النتيجة')};
+    }
+  };
+  return()=>{live=false;stopAll()};
+}
+
+/* ---------- test: reaction ---------- */
+function testReact(b){
+  b.innerHTML=`<p class="hint" style="margin:0">حين يتحول المربع إلى الأخضر المسه بأسرع ما يمكن. خمس محاولات.</p><button type="button" class="pad" id="rxPad">المس للبدء</button><div class="row" id="rxTimes"></div><div id="rxOut"></div>`;
+  const pad=$('#rxPad',b),times=$('#rxTimes',b),out=$('#rxOut',b);let state='idle',tGo=0,to=0,res=[];
+  const set=(s,t)=>{state=s;pad.className='pad '+(s==='wait'?'wait':s==='go'?'go':s==='early'?'early':'');pad.textContent=t};
+  function arm(){set('wait','انتظر اللون الأخضر…');to=setTimeout(()=>{tGo=performance.now();set('go','المس الآن!')},1500+Math.random()*2500)}
+  pad.addEventListener('pointerdown',e=>{e.preventDefault();
+    if(state==='idle'||state==='early'||state==='shown'){arm();return}
+    if(state==='wait'){clearTimeout(to);set('early','مبكراً! المس لإعادة المحاولة');return}
+    if(state==='go'){const ms=Math.round(performance.now()-tGo);res.push(ms);times.innerHTML=res.map(x=>`<span class="chip"><bdi>${x}</bdi> م.ث</span>`).join('');
+      if(res.length<5){set('shown',ms+' ملي ثانية · المس للمحاولة التالية')}
+      else{state='done';const avg=Math.round(res.reduce((a,x)=>a+x,0)/res.length),best=Math.min(...res),c=cReact(avg);pad.className='pad';pad.textContent='انتهى الاختبار';
+        out.innerHTML=`<div class="sheet-b">${resultHTML(c,avg,'ملي ثانية',`<p class="small muted">أفضل محاولة: <bdi>${best}</bdi> ملي ثانية.</p>`)}<div class="row"><button class="btn" type="button" id="rxSave">احفظ في السجل</button><button class="btn ghost" type="button" id="rxRe">أعد</button></div></div>`;
+        $('#rxSave',out).onclick=ev=>{addReading('react',{ms:avg,best});ev.target.disabled=true;ev.target.textContent='حُفظت';toast('حُفظت النتيجة')};
+        $('#rxRe',out).onclick=()=>{res=[];times.innerHTML='';out.innerHTML='';set('idle','المس للبدء')}}}
+  });
+  return()=>clearTimeout(to);
+}
+
+/* ---------- screen calibration ---------- */
+const pxmm=()=>P().pxmm||((Math.min(screen.width,screen.height)||400)<=520?6.1:3.78);
+function calibHTML(){const w=Math.round(pxmm()*53.98);return `<p style="margin:0">ضع بطاقة بنكية (أو أي بطاقة بالحجم نفسه) بالطول على الشاشة في زاوية المستطيل، ثم حرّك المؤشر حتى يطابق عرض المستطيل عرض البطاقة تماماً.</p>
+  <div class="cal-wrap"><div class="cal-card" id="calCard" style="width:${w}px"></div></div>
+  <input type="range" id="calR" min="120" max="640" step="1" value="${w}" aria-label="عرض البطاقة">
+  <button class="btn block" type="button" id="calSave">احفظ المعايرة</button>`}
+function mountCalib(b,after){const card=$('#calCard',b),r=$('#calR',b);r.oninput=()=>card.style.width=r.value+'px';
+  $('#calSave',b).onclick=()=>{P().pxmm=+(+r.value/53.98).toFixed(3);persist();toast('حُفظت المعايرة');after?after():closeSheet()}}
+function sheetCalib(){openSheet('معايرة الشاشة',calibHTML(),b=>mountCalib(b))}
+
+/* ---------- test: visual acuity (tumbling E) ---------- */
+function testAcuity(b){
+  const SN=[200,100,70,50,40,30,25,20],DIST=400,mm20=DIST*Math.tan(5/60*Math.PI/180);
+  let eye='R',lvl=0,trial=0,ok=0,wrong=0,dir=0,passed=null,results={};
+  function intro(){
+    b.innerHTML=`${P().pxmm?'':`<div class="banner info">${ic('ruler')}<div><b>عايِر الشاشة أولاً</b><p>لتكون أحجام الحروف دقيقة على هاتفك.</p><div class="row" style="margin-top:8px"><button class="btn sm" type="button" id="acCal">عايِر الآن</button></div></div></div>`}
+    <ol class="steps"><li>امسك الهاتف على بُعد 40 سم من عينيك (تقريباً المسافة من المرفق إلى أطراف الأصابع).</li><li>إذا كنت تلبس نظارة للقراءة أو للبعيد فالبسها.</li><li>غطِّ عينك ${eye==='R'?'اليسرى':'اليمنى'} بكفّك دون ضغط، واختبر العين ${EYE[eye]}.</li><li>اضغط السهم الذي يشير إلى اتجاه فتحة الحرف E.</li></ol>
+    <button class="btn block" type="button" id="acGo">${ic('eye')}ابدأ بالعين ${EYE[eye]}</button>`;
+    const cal=$('#acCal',b);if(cal)cal.onclick=()=>{b.innerHTML=calibHTML();mountCalib(b,intro)};
+    $('#acGo',b).onclick=()=>{lvl=0;trial=0;ok=0;wrong=0;passed=null;stage();next()};
+  }
+  function stage(){
+    b.innerHTML=`<div class="stage"><div class="status" id="acSt"></div><div class="eye-box"><canvas id="acCv" width="200" height="200"></canvas></div>
+    <div class="arrows"><button type="button" class="u" data-d="3" aria-label="أعلى">${ic('arrowU')}</button><button type="button" class="l" data-d="2" aria-label="يسار">${ic('arrowL')}</button><button type="button" class="n" data-d="-1">لا أراه</button><button type="button" class="r" data-d="0" aria-label="يمين">${ic('arrowR')}</button><button type="button" class="d" data-d="1" aria-label="أسفل">${ic('arrowD')}</button></div></div>`;
+    $$('.arrows button',b).forEach(x=>x.onclick=()=>answer(+x.dataset.d));
+  }
+  function drawE(){
+    const cv=$('#acCv',b),dpr=window.devicePixelRatio||1;cv.width=Math.round(200*dpr);cv.height=Math.round(200*dpr);
+    const c=cv.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,cv.width,cv.height);
+    const hpx=mm20*(SN[lvl]/20)*pxmm()*dpr,u=Math.max(1,Math.round(hpx/5)),s=u*5;
+    c.save();c.translate(Math.round(cv.width/2),Math.round(cv.height/2));c.rotate(dir*Math.PI/2);c.translate(-s/2,-s/2);c.fillStyle='#000';
+    c.fillRect(0,0,u,s);c.fillRect(0,0,s,u);c.fillRect(0,2*u,s,u);c.fillRect(0,4*u,s,u);c.restore();
+    $('#acSt',b).textContent=`العين ${EYE[eye]} · المستوى ${lvl+1} من ${SN.length} · المحاولة ${trial+1} من 4`;
+  }
+  function next(){dir=Math.floor(Math.random()*4);drawE()}
+  function answer(d){
+    if(d===dir)ok++;else wrong++;trial++;
+    if(ok>=3||wrong>=2||trial>=4){
+      if(ok>=3){passed=SN[lvl];lvl++;if(lvl>=SN.length)return finishEye()}else return finishEye();
+      trial=0;ok=0;wrong=0}
+    next();
+  }
+  function finishEye(){
+    const d=passed||400;results[eye]=d;addReading('vision',{eye,d});
+    if(eye==='R'){eye='L';b.innerHTML=`${resultHTML(cVision(d),snel(d),'العين اليمنى · '+snelM(d))}<button class="btn block" type="button" id="acNext">الآن العين اليسرى</button>`;$('#acNext',b).onclick=intro;return}
+    const worst=Math.max(results.R||400,results.L||400);
+    b.innerHTML=`<div class="grid2">${resultHTML(cVision(results.R),snel(results.R),'العين اليمنى · '+snelM(results.R))}${resultHTML(cVision(results.L),snel(results.L),'العين اليسرى · '+snelM(results.L))}</div>
+    <p class="hint">حُفظت النتائج في سجلك. ${Math.abs(SN.indexOf(results.R)-SN.indexOf(results.L))>=2?'يوجد فرق واضح بين العينين؛ يُنصح بفحص النظر.':''}${worst>30?' يُنصح بفحص النظر لدى أخصائي البصريات.':''} هذا فحص للرؤية القريبة ولا يغني عن فحص العيادة.</p><button class="btn block" type="button" data-act="close">تم</button>`;
+  }
+  intro();
+}
+
+/* ---------- test: color plates ---------- */
+function lumOf(r,g,b){const f=c=>{c/=255;return c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4)};return 0.2126*f(r)+0.7152*f(g)+0.0722*f(b)}
+function hsl(h,s,l){const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l),f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));return [255*f(0),255*f(8),255*f(4)].map(Math.round)}
+function atLum(h,s,Y){let lo=0,hi=1;for(let i=0;i<16;i++){const m=(lo+hi)/2,[r,g,b]=hsl(h,s,m);if(lumOf(r,g,b)<Y)lo=m;else hi=m}const [r,g,b]=hsl(h,s,(lo+hi)/2);return `rgb(${r},${g},${b})`}
+function drawPlate(cv,digit,kind,sat){
+  const S0=260,dpr=window.devicePixelRatio||1;cv.width=S0*dpr;cv.height=S0*dpr;const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);
+  const m=document.createElement('canvas');m.width=S0;m.height=S0;const mc=m.getContext('2d');mc.fillStyle='#000';mc.font=`700 ${S0*0.6}px Arial,Helvetica,sans-serif`;mc.textAlign='center';mc.textBaseline='middle';mc.fillText(String(digit),S0/2,S0/2+S0*0.03);
+  const md=mc.getImageData(0,0,S0,S0).data,R0=S0/2-3,cell=18,grid=new Map(),dots=[];
+  const key=(x,y)=>((x/cell)|0)+','+((y/cell)|0);
+  for(let a=0;a<12000&&dots.length<1700;a++){
+    const r=2.2+Math.pow(Math.random(),1.8)*6.4,ang=Math.random()*Math.PI*2,rad=Math.sqrt(Math.random())*(R0-r),x=S0/2+Math.cos(ang)*rad,y=S0/2+Math.sin(ang)*rad;
+    let okk=true;const gx=(x/cell)|0,gy=(y/cell)|0;
+    for(let i=-1;i<=1&&okk;i++)for(let j=-1;j<=1&&okk;j++){const arr=grid.get((gx+i)+','+(gy+j));if(arr)for(const d of arr){if(Math.hypot(d[0]-x,d[1]-y)<d[2]+r+0.9){okk=false;break}}}
+    if(!okk)continue;const d=[x,y,r];dots.push(d);const k=key(x,y);if(!grid.has(k))grid.set(k,[]);grid.get(k).push(d);
+  }
+  for(const [x,y,r] of dots){
+    const inside=md[((y|0)*S0+(x|0))*4+3]>100;let col;
+    if(kind==='ctrl')col=inside?atLum(210,0.18,0.07+Math.random()*0.06):atLum(36,0.28,0.42+Math.random()*0.18);
+    else col=inside?atLum(8+Math.random()*20,(0.62+Math.random()*0.12)*sat,0.2+Math.random()*0.14):atLum(68+Math.random()*30,(0.42+Math.random()*0.14)*sat,0.2+Math.random()*0.14);
+    c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();
+  }
+}
+function testColor(b){
+  const pool=[2,3,5,6,7,8,9],plates=[{kind:'ctrl',sat:1},{kind:'rg',sat:1},{kind:'rg',sat:.92},{kind:'rg',sat:.84},{kind:'rg',sat:.76},{kind:'rg',sat:.68}];
+  plates.forEach(p=>p.d=pool[Math.floor(Math.random()*pool.length)]);let i=0,score=0,ctrlOk=true;
+  function intro(){b.innerHTML=`<ol class="steps"><li>ارفع سطوع الشاشة إلى الحد الأقصى.</li><li>أوقف الوضع الليلي (Night Shift) والوضع الداكن للألوان ومرشحات الألوان.</li><li>اختر الرقم الذي تراه داخل الدائرة، أو «لا أرى رقماً».</li></ol><button class="btn block" type="button" id="clGo">${ic('palette')}ابدأ</button>`;$('#clGo',b).onclick=show}
+  function show(){
+    const p=plates[i],opts=new Set([p.d]);while(opts.size<4)opts.add(pool[Math.floor(Math.random()*pool.length)]);const arr=[...opts].sort(()=>Math.random()-.5);
+    b.innerHTML=`<div class="stage"><div class="status">اللوحة ${i+1} من ${plates.length}</div><canvas class="plate" id="clCv"></canvas><div class="opts">${arr.map(n=>`<button type="button" data-n="${n}">${n}</button>`).join('')}<button type="button" class="wide" data-n="0">لا أرى رقماً</button></div></div>`;
+    drawPlate($('#clCv',b),p.d,p.kind,p.sat);
+    $$('.opts button',b).forEach(x=>x.onclick=()=>{const ok=+x.dataset.n===p.d;if(p.kind==='ctrl')ctrlOk=ok;else if(ok)score++;i++;i<plates.length?show():finish()});
+  }
+  function finish(){
+    if(!ctrlOk){b.innerHTML=`<div class="banner warn">${ic('alert')}<div><b>لم تُقرأ لوحة التحكم</b><p>اللوحة الأولى يراها الجميع. تأكد من السطوع وإيقاف مرشحات الألوان ثم أعد الاختبار.</p></div></div><button class="btn block" type="button" id="clRe">أعد الاختبار</button>`;$('#clRe',b).onclick=()=>{i=0;score=0;ctrlOk=true;plates.forEach(p=>p.d=pool[Math.floor(Math.random()*pool.length)]);show()};return}
+    const of=plates.length-1;addReading('color',{score,of});
+    b.innerHTML=`${resultHTML(cColor(score,of),score+'/'+of,'لوحات صحيحة')}<p class="hint">حُفظت النتيجة. الشاشات تختلف في عرض الألوان، لذا هذه نتيجة استرشادية.</p><button class="btn block" type="button" data-act="close">تم</button>`;
+  }
+  intro();
+}
+
+/* ---------- test: amsler + astigmatism ---------- */
+function amslerSVG(){let s='<svg viewBox="0 0 200 200" width="240" height="240" style="max-width:100%;display:block" aria-label="شبكة أمسلر"><rect width="200" height="200" fill="#fff"/>';for(let i=0;i<=20;i++){const p=i*10;s+=`<line x1="${p}" y1="0" x2="${p}" y2="200" stroke="#111" stroke-width=".7"/><line x1="0" y1="${p}" x2="200" y2="${p}" stroke="#111" stroke-width=".7"/>`}return s+'<circle cx="100" cy="100" r="3.2" fill="#111"/></svg>'}
+function astigSVG(){let s='<svg viewBox="0 0 220 220" width="240" height="240" style="max-width:100%;display:block" aria-label="لوحة اللابؤرية"><rect width="220" height="220" fill="#fff"/>';
+  for(let a=0;a<180;a+=15){const r=a*Math.PI/180,dx=Math.cos(r)*88,dy=Math.sin(r)*88;s+=`<line x1="${(110-dx).toFixed(1)}" y1="${(110-dy).toFixed(1)}" x2="${(110+dx).toFixed(1)}" y2="${(110+dy).toFixed(1)}" stroke="#111" stroke-width="2.4" stroke-linecap="round"/>`}
+  for(let h=1;h<=12;h++){const r=(h*30-90)*Math.PI/180;s+=`<text x="${(110+Math.cos(r)*101).toFixed(1)}" y="${(110+Math.sin(r)*101+4).toFixed(1)}" text-anchor="middle" font-size="11" font-family="Arial" fill="#111">${h}</text>`}
+  return s+'<circle cx="110" cy="110" r="10" fill="#fff"/></svg>'}
+function testGrid(b,kind){
+  const isA=kind==='amsler',M=MET[kind];let eye='R';const res={};
+  const Q=isA?['هل كل الخطوط مستقيمة ومتوازية دون انحناء أو تموّج؟','هل تظهر كل المربعات بوضوح دون مناطق مفقودة أو ضبابية أو داكنة؟']:['هل تبدو كل الخطوط بنفس السواد والوضوح؟'];
+  function step(){
+    b.innerHTML=`<div class="sheet-b" id="gW"><p style="margin:0">${isA?'امسك الهاتف على بُعد 30 سم، والبس نظارة القراءة إن كنت تستخدمها.':'امسك الهاتف على بُعد 40 سم دون نظارة إن أمكن.'} غطِّ العين ${eye==='R'?'اليسرى':'اليمنى'} وانظر بالعين <b>${EYE[eye]}</b> ${isA?'إلى النقطة في المركز دون أن تحرك نظرك.':'إلى مركز اللوحة.'}</p>
+    <div class="stage"><div class="whitecard">${isA?amslerSVG():astigSVG()}</div></div>
+    ${Q.map((q,i)=>`<div class="field"><span class="lbl" style="color:var(--ink);font-size:14.5px">${q}</span><div class="seg"><label><input type="radio" id="gq${i}y" name="gq${i}" value="1"><span>نعم</span></label><label><input type="radio" id="gq${i}n" name="gq${i}" value="0"><span>لا</span></label></div></div>`).join('')}
+    <button class="btn block" type="button" id="gNext" disabled>${eye==='R'?'التالي: العين اليسرى':'النتيجة'}</button></div>`;
+    const w=$('#gW',b),btn=$('#gNext',b);
+    w.addEventListener('change',()=>{btn.disabled=Q.some((_,i)=>!$(`input[name="gq${i}"]:checked`,w))});
+    btn.onclick=()=>{const ok=Q.every((_,i)=>$(`input[name="gq${i}"]:checked`,w).value==='1');res[eye]=ok;addReading(kind,{eye,ok});if(eye==='R'){eye='L';step();$('#sheet').scrollTop=0}else done()};
+  }
+  function done(){
+    const card=e=>{const c=M.cls({ok:res[e],eye:e});return `<div class="result ${c.lv}"><span class="small muted">العين ${EYE[e]}</span><div class="r-top"><span class="chip ${c.lv}">${LVN[c.lv]}</span><b>${esc(c.t)}</b></div><p>${esc(c.a)}</p></div>`};
+    b.innerHTML=`<div class="grid2">${card('R')}${card('L')}</div>
+    <p class="hint">${isA?'إذا ظهر لك تشوّه جديد في الخطوط فراجع طبيب العيون خلال أيام، وفي اليوم نفسه إن ظهر فجأة. كرر هذا الفحص أسبوعياً إذا كنت فوق الخمسين أو مصاباً بالسكري.':'اللابؤرية شائعة وتُصحَّح بالنظارة أو العدسات.'} حُفظت النتائج في سجلك.</p><button class="btn block" type="button" data-act="close">تم</button>`;
+  }
+  step();
+}
+
+/* ---------- test: hearing ---------- */
+function hearCls(v){return v.flags&&v.flags.length?C('warn','يحتاج متابعة',v.flags.join(' · ')+'. اختبار مقارن غير معاير؛ يُنصح بتخطيط السمع لدى أخصائي.'):C('ok','سمع متوازن','لم يظهر فرق واضح بين الأذنين أو انخفاض عند ترددات معينة. اختبار مقارن غير معاير.')}
+function audiogram(v){
+  const F=[500,1000,2000,4000,8000],W=320,H=190,L=34,R=14,T=14,B=26,X=i=>L+(W-L-R)*i/(F.length-1),Y=r=>T+(H-T-B)*clamp(r,0,80)/80;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="مخطط السمع">`;
+  for(let r=0;r<=80;r+=20)s+=`<line class="gl" x1="${L}" x2="${W-R}" y1="${Y(r)}" y2="${Y(r)}"/><text class="tk" x="${L-6}" y="${Y(r)+3.5}" text-anchor="end">${r}</text>`;
+  F.forEach((f,i)=>s+=`<text class="tk" x="${X(i)}" y="${H-7}" text-anchor="middle">${f>=1000?f/1000+'k':f}</text>`);
+  for(const [e,col] of [['R','var(--bad)'],['L','var(--info)']]){const pts=F.map((f,i)=>[X(i),Y(v[e]&&v[e][f]!=null?v[e][f]:80)]);
+    s+=`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="1.8"/>`;
+    pts.forEach(([x,y])=>{s+=e==='R'?`<circle cx="${x}" cy="${y}" r="5" fill="var(--surface)" stroke="${col}" stroke-width="2"/>`:`<path d="M${x-4.5} ${y-4.5}l9 9M${x+4.5} ${y-4.5}l-9 9" stroke="${col}" stroke-width="2.2" stroke-linecap="round"/>`})}
+  return s+'</svg>';
+}
+function testHear(b){
+  const F=[1000,2000,4000,8000,500],LV=[-80,-70,-60,-50,-40,-30,-20,-10];let ctx=null,live=true,heardFlag=false,toneOn=0;
+  b.innerHTML=`<ol class="steps"><li>البس سماعات الأذن (السلكية أفضل) في مكان هادئ.</li><li>اضبط صوت الهاتف على 50% واترك هذا المستوى ثابتاً في كل مرة تختبر فيها لتقارن النتائج.</li><li>ستسمع نغمات تتصاعد تدريجياً في كل أذن. اضغط «أسمعها» فور سماع أي نغمة ولو كانت خافتة جداً.</li></ol>
+  <button class="btn block" type="button" id="hGo">${ic('ear')}ابدأ الاختبار (دقيقتان تقريباً)</button>`;
+  $('#hGo',b).onclick=run;
+  function tone(f,db,ear){const t=ctx.currentTime+0.02,o=ctx.createOscillator(),g=ctx.createGain(),m=ctx.createChannelMerger(2),a=Math.pow(10,db/20);
+    o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(a,t+0.06);g.gain.setValueAtTime(a,t+0.85);g.gain.linearRampToValueAtTime(0,t+0.95);
+    o.connect(g);g.connect(m,0,ear==='L'?0:1);m.connect(ctx.destination);o.start(t);o.stop(t+1)}
+  function wait(ms){return new Promise(res=>{const t0=performance.now();const iv=setInterval(()=>{if(!live||heardFlag||performance.now()-t0>ms){clearInterval(iv);res()}},40)})}
+  async function run(){
+    try{ctx=new (window.AudioContext||window.webkitAudioContext)();await ctx.resume()}catch(e){b.innerHTML=`<div class="banner warn">${ic('alert')}<div><b>الصوت غير متاح</b><p>لم نتمكن من تشغيل الصوت على هذا الجهاز.</p></div></div>`;return}
+    b.innerHTML=`<div class="stage"><div class="status" id="hSt"></div><div class="prog"><i id="hProg"></i></div><button type="button" class="pad" id="hPad" style="min-height:200px">أسمعها</button></div><button class="btn ghost block" type="button" data-act="close">إيقاف</button>`;
+    const st=$('#hSt',b),pad=$('#hPad',b),prog=$('#hProg',b);
+    pad.addEventListener('pointerdown',e=>{e.preventDefault();if(performance.now()-toneOn<2600){heardFlag=true;pad.classList.add('go');setTimeout(()=>pad.classList.remove('go'),220)}});
+    const res={R:{},L:{}};let done=0;
+    for(const ear of ['R','L'])for(const f of F){
+      let th=null;
+      for(const lv of LV){if(!live)return;st.textContent=`الأذن ${EYE[ear]} · ${f} هرتز`;heardFlag=false;await sleep(500+Math.random()*900);if(!live)return;
+        toneOn=performance.now();tone(f,lv,ear);await wait(1900);if(heardFlag){th=lv;await sleep(350);break}}
+      res[ear][f]=th==null?80:th+80;done++;prog.style.width=(done/(F.length*2)*100)+'%';
+    }
+    try{ctx.close()}catch(e){}
+    const Fs=[500,1000,2000,4000,8000],all=Fs.flatMap(f=>[res.R[f],res.L[f]]),best=Math.min(...all),flags=[];
+    const asym=Fs.filter(f=>Math.abs(res.R[f]-res.L[f])>=20);if(asym.length>=2)flags.push('فرق واضح بين الأذنين');
+    const drop=Fs.filter(f=>Math.min(res.R[f],res.L[f])-best>=30);if(drop.length)flags.push('انخفاض عند '+drop.map(f=>f>=1000?f/1000+' كيلوهرتز':f+' هرتز').join(' و'));
+    if(Fs.some(f=>res.R[f]>=80||res.L[f]>=80))flags.push('نغمات لم تُسمع');
+    const v={R:res.R,L:res.L,flags};addReading('hear',v);
+    b.innerHTML=`${resultHTML(hearCls(v),null,'')}<div class="chart">${audiogram(v)}</div><div class="legend"><span><i style="background:var(--bad)"></i>الأذن اليمنى (O)</span><span><i style="background:var(--info)"></i>الأذن اليسرى (X)</span><span>الأعلى في المخطط = سمع أفضل</span></div>
+    <p class="hint">ضعف السمع المفاجئ في أذن واحدة حالة عاجلة تستدعي مراجعة طبيب الأنف والأذن خلال 24–48 ساعة.</p><button class="btn block" type="button" data-act="close">تم</button>`;
+  }
+  return()=>{live=false;try{ctx&&ctx.close()}catch(e){}};
+}
+
+/* ---------- questionnaires ---------- */
+const OPTS=['إطلاقاً','عدة أيام','أكثر من نصف الأيام','تقريباً كل يوم'];
+const PHQ=['قلة الاهتمام أو المتعة في القيام بالأشياء','الشعور بالإحباط أو الاكتئاب أو اليأس','صعوبة في النوم أو الاستمرار فيه، أو النوم أكثر من اللازم','الشعور بالتعب أو قلة الطاقة','ضعف الشهية أو الإفراط في الأكل','الشعور بعدم الرضا عن نفسك، أو أنك فاشل أو خذلت نفسك أو عائلتك','صعوبة في التركيز على أشياء مثل القراءة أو مشاهدة التلفاز','الحركة أو الكلام ببطء لاحظه الآخرون، أو العكس: التململ وعدم الاستقرار أكثر من المعتاد','أفكار بأنك ستكون أفضل حالاً لو كنت ميتاً، أو أفكار بإيذاء نفسك بأي شكل'];
+const GAD=['الشعور بالتوتر أو القلق أو العصبية','عدم القدرة على إيقاف القلق أو التحكم فيه','القلق الزائد بشأن أمور مختلفة','صعوبة في الاسترخاء','التململ لدرجة يصعب معها الجلوس بهدوء','سرعة الانزعاج أو الاستثارة','الشعور بالخوف كأن شيئاً فظيعاً قد يحدث'];
+function sheetQ(kind){
+  const Q=kind==='phq'?PHQ:GAD;
+  openSheet(kind==='phq'?'المزاج والاكتئاب (PHQ-9)':'القلق والتوتر (GAD-7)',`<p class="muted" style="margin:0">خلال الأسبوعين الماضيين، كم مرة انزعجت من كلٍّ مما يلي؟</p>
+  <form id="qF" class="sheet-b">${Q.map((q,i)=>`<fieldset class="q"><legend>${i+1}. ${q}</legend><div class="seg">${OPTS.map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}"><span>${o}</span></label>`).join('')}</div></fieldset>`).join('')}
+  <button class="btn block" type="submit" id="qGo" disabled>اعرض النتيجة</button></form><div id="qOut"></div>`,b=>{
+    const f=$('#qF',b),go=$('#qGo',b);f.onchange=()=>{go.disabled=Q.some((_,i)=>!$(`input[name="q${i}"]:checked`,f))};
+    f.onsubmit=e=>{e.preventDefault();const vals=Q.map((_,i)=>+$(`input[name="q${i}"]:checked`,f).value),score=vals.reduce((a,x)=>a+x,0),c=kind==='phq'?cPHQ(score):cGAD(score);
+      const v={score};if(kind==='phq')v.i9=vals[8];addReading(kind,v);f.hidden=true;
+      const crisis=kind==='phq'&&vals[8]>0?`<div class="triage bad"><h3>نحن نهتم بسلامتك</h3><p>ذكرتَ أفكاراً عن إيذاء نفسك. هذا شعور يمرّ به كثيرون، ولست وحدك. تحدّث اليوم مع شخص تثق به، أو مع طبيب أو أخصائي نفسي. إذا شعرت أنك في خطر الآن فاتصل بالطوارئ فوراً:</p><div class="callnum"><bdi>${esc(emNum())}</bdi></div><div class="row"><a class="btn danger" href="tel:${esc(emNum())}">${ic('phone')}اتصل الآن</a>${P().contactPhone?`<a class="btn ghost" href="tel:${esc(P().contactPhone)}">اتصل بـ${esc(P().contactName||'جهة الطوارئ')}</a>`:''}</div></div>`:'';
+      $('#qOut',b).innerHTML=`<div class="sheet-b">${crisis}${resultHTML(c,score,kind==='phq'?'من 27':'من 21')}<p class="hint">هذا استبيان فحص أولي وليس تشخيصاً. حُفظت النتيجة لتقارنها عند إعادة الاختبار بعد أسبوعين.</p><button class="btn block" type="button" data-act="close">تم</button></div>`;
+      $('#sheet').scrollTop=0;};
+  });
+}
+
+/* ---------- symptom checker ---------- */
+function sheetSym(id){
+  const s=SYM.find(x=>x.id===id);if(!s)return;
+  const ck=(arr,pre,em)=>arr.map((t,i)=>`<label class="ck ${em?'em':''}"><input type="checkbox" name="${pre}" value="${i}"><span>${t}</span></label>`).join('');
+  openSheet(s.n,`<form id="sF" class="sheet-b"><div><h3 class="sec" style="margin:0 0 8px;font-size:15px">علامات خطر: هل لديك أيٌّ منها؟</h3><div class="checks">${ck(s.em,'em',1)}</div></div>
+  <div><h3 class="sec" style="margin:0 0 8px;font-size:15px">وهل ينطبق عليك أيٌّ مما يلي؟</h3><div class="checks">${ck(s.ur,'ur')}</div></div>
+  <div><h3 class="sec" style="margin:0 0 8px;font-size:15px">عنك</h3><div class="checks">${ck(MODS,'md')}</div></div>
+  <button class="btn block" type="submit">اعرض التوصية</button></form><div id="sOut"></div>`,b=>{
+    const f=$('#sF',b);f.onsubmit=e=>{e.preventDefault();
+      const got=n=>$$(`input[name="${n}"]:checked`,f).map(x=>+x.value),em=got('em'),ur=got('ur'),md=got('md');
+      let lv,h,p;
+      if(em.length){lv='bad';h='اتصل بالإسعاف الآن';p='ما ذكرته من علامات الخطر يحتاج تقييماً طبياً فورياً. لا تقُد السيارة بنفسك، وابقَ مع شخص حتى تصل المساعدة.'}
+      else if(ur.length){lv='warn';h='راجع طبيباً أو قسم الطوارئ اليوم';p='الأعراض التي اخترتها تستحق فحصاً طبياً خلال 24 ساعة. إذا ظهرت أي علامة خطر قبل ذلك فاتصل بالإسعاف.'}
+      else if(md.length){lv='info';h='احجز موعداً مع طبيب خلال أيام';p='لا توجد علامات خطر، لكن وضعك الصحي يجعل تقييم الطبيب أفضل. '+s.self}
+      else{lv='ok';h='يمكنك العناية بنفسك في المنزل';p=s.self}
+      const chosen=[...em.map(i=>s.em[i]),...ur.map(i=>s.ur[i]),...md.map(i=>MODS[i])];
+      $('#sOut',b).innerHTML=`<div class="sheet-b"><div class="triage ${lv}"><h3>${h}</h3><p>${esc(p)}</p>${lv==='bad'?`<div class="callnum"><bdi>${esc(emNum())}</bdi></div><div class="row"><a class="btn danger" href="tel:${esc(emNum())}">${ic('phone')}اتصل بالإسعاف</a><button class="btn ghost" type="button" data-act="copy" data-txt="${esc(emNum())}">انسخ الرقم</button></div>`:''}${lv!=='bad'?`<p class="small muted">عُد للتقييم إذا ساءت الأعراض أو ظهرت أي علامة خطر.</p>`:''}</div>
+      ${aiSample&&lv!=='bad'?`<button class="btn soft block" type="button" id="sAi">${ic('chat')}ناقش حالتك مع طبيب الجيب</button>`:''}<p class="foot">هذه أداة فرز إرشادية مبنية على علامات الخطر الشائعة، ولا تشخّص الحالة.</p></div>`;
+      const ai=$('#sAi',b);if(ai)ai.onclick=()=>sheetChat(`أعاني من: ${s.n}.${chosen.length?' وينطبق عليّ: '+chosen.join('، ')+'.':' ولا توجد لديّ علامات الخطر المذكورة.'} ماذا تنصحني؟`);
+      $('#sOut',b).scrollIntoView({behavior:'smooth',block:'start'});
+    };
+  });
+}
+
+/* ---------- AI doctor chat ---------- */
+const chat={turns:[]};
+function aiContext(){
+  const p=P(),a=age(),lines=[];
+  lines.push('العمر: '+(a?a+' سنة':'غير محدد')+'، الجنس: '+(p.sex==='m'?'ذكر':p.sex==='f'?'أنثى':'غير محدد'));
+  if(+p.height&&+p.weight){const b=bmiOf(+p.weight);lines.push(`الطول ${p.height} سم، الوزن ${p.weight} كغ، مؤشر الكتلة ${b?b.toFixed(1):'-'}`)}
+  if(p.conditions)lines.push('الأمراض المزمنة: '+p.conditions);if(p.allergies)lines.push('الحساسية: '+p.allergies);
+  if(S.meds.length)lines.push('الأدوية: '+S.meds.filter(m=>m.on).map(m=>m.name+(m.dose?' ('+m.dose+')':'')).join('، '));
+  for(const k of ['bp','hr','spo2','temp','glu','wt','rr','phq','gad']){const r=last(k);if(r){const M=MET[k];lines.push(`${M.n}: ${M.val(r.v)} ${unitOf(k)}${M.sub?' '+M.sub(r.v):''} (${M.cls(r.v).t}) بتاريخ ${fD.format(r.ts)}`)}}
+  return lines.join('\n');
+}
+function rules(){return `أنت «طبيب الجيب»، مساعد صحي داخل تطبيق «عيادة الجيب». تحدّث بعربية فصحى بسيطة ودافئة.
+مهمتك: فهم ما يشعر به المستخدم بأسئلة متابعة قصيرة (سؤال أو سؤالان في كل رد على الأكثر حتى تتضح الصورة)، ثم شرح الأسباب الشائعة المحتملة بلغة بسيطة، وتحديد مستوى الإلحاح بوضوح في سطر مستقل بإحدى العبارات: «طوارئ الآن» أو «طبيب اليوم» أو «موعد خلال أيام» أو «رعاية منزلية»، مع خطوات عملية.
+إذا ظهرت أي علامة خطر فابدأ ردك بها واطلب الاتصال بالإسعاف على الرقم ${emNum()} فوراً.
+لا تقدّم تشخيصاً نهائياً، ولا تصف أدوية تحتاج وصفة طبية أو جرعاتها. يمكنك ذكر أدوية شائعة متاحة دون وصفة بشكل عام مع التنبيه لقراءة النشرة ومراعاة الحساسية والأمراض المزمنة المذكورة.
+استخدم بيانات المستخدم أدناه حين تكون ذات صلة. اجعل ردك أقل من 150 كلمة، ونظّمه بنقاط قصيرة. لا تستخدم الجداول.
+إذا ذكر المستخدم أفكاراً لإيذاء نفسه فتعامل بلطف، وشجّعه على التواصل الفوري مع شخص يثق به أو مع الطوارئ (${emNum()}).
+
+بيانات المستخدم من التطبيق:
+${aiContext()}`}
+function sheetChat(prefill){
+  if(!aiSample){toast('المساعد الذكي غير متاح هنا');return}
+  openSheet('طبيب الجيب',`<p class="hint" style="margin:0">مساعد ذكي للإرشاد العام، لا يغني عن الطبيب. في الطوارئ اتصل بـ<bdi>${esc(emNum())}</bdi>.</p>
+  <div class="chat" id="chLog"></div>
+  <div class="sugg" id="chSug">${['عندي صداع منذ يومين مع غثيان','ماذا تعني قراءات ضغطي الأخيرة؟','أشعر بتعب مستمر، ما الأسباب؟','كيف أحسّن نومي؟'].map(t=>`<button type="button" data-s="${esc(t)}">${t}</button>`).join('')}</div>
+  <form class="chat-f" id="chF"><textarea id="chIn" rows="2" placeholder="صف ما تشعر به…" aria-label="رسالتك"></textarea><button class="btn" type="submit" id="chSend">إرسال</button><button class="btn ghost" type="button" id="chStop" hidden>إيقاف</button></form>`,b=>{
+    const log=$('#chLog',b),inp=$('#chIn',b),send=$('#chSend',b),stop=$('#chStop',b),sug=$('#chSug',b);let ctl=null,busy=false;
+    function draw(){log.innerHTML=chat.turns.map(t=>`<div class="msg ${t.role==='user'?'u':'a'}">${t.role==='user'?esc(t.content).replace(/\n/g,'<br>'):mdLite(t.content)}</div>`).join('');sug.hidden=chat.turns.length>0}
+    async function ask(text){
+      if(busy||!text.trim())return;busy=true;chat.turns.push({role:'user',content:text.trim()});draw();inp.value='';
+      const bub=document.createElement('div');bub.className='msg a';bub.textContent='يفكّر…';log.append(bub);bub.scrollIntoView({block:'end'});
+      send.hidden=true;stop.hidden=false;ctl=new AbortController();
+      try{const r=await aiSample([{role:'user',content:rules()},{role:'assistant',content:'فهمت. سأتبع هذه التعليمات.'},...chat.turns],{cache:false,signal:ctl.signal,onText:({text})=>{bub.innerHTML=mdLite(text)}});
+        chat.turns.push({role:'assistant',content:r.text});}
+      catch(e){const code=e&&e.code;if(e&&e.text){chat.turns.push({role:'assistant',content:e.text})}
+        else{chat.turns.pop();}
+        if(code!=='cancelled')toast(code==='not_granted'?'لم يُسمح باستخدام المساعد':code==='rate_limited'?'طلبات كثيرة، انتظر قليلاً ثم أعد المحاولة':'تعذّر الرد الآن، حاول مرة أخرى')}
+      busy=false;send.hidden=false;stop.hidden=true;draw();const lm=log.lastElementChild;if(lm)lm.scrollIntoView({block:'end'});
+    }
+    $('#chF',b).onsubmit=e=>{e.preventDefault();ask(inp.value)};
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask(inp.value)}});
+    stop.onclick=()=>ctl&&ctl.abort();sug.onclick=e=>{const t=e.target.closest('button');if(t)ask(t.dataset.s)};
+    draw();if(prefill)ask(prefill);else setTimeout(()=>inp.focus(),150);
+    return()=>{ctl&&ctl.abort()};
+  });
+}
+
+/* ---------- SOS + medical ID ---------- */
+function medID(){const p=P(),a=age();const row=(k,v)=>v?`<div><span>${k}</span><b style="font-family:var(--f-body);white-space:normal;text-align:left">${esc(v)}</b></div>`:'';
+  return `<div class="mid"><div class="mid-h"><span>البطاقة الطبية</span><span>${esc(p.name||'')}</span></div><div class="kv">
+  ${row('العمر',a?a+' سنة':'')}${row('فصيلة الدم',p.blood)}${row('الحساسية',p.allergies||'لم تُسجَّل')}${row('الأمراض المزمنة',p.conditions)}${row('الأدوية',S.meds.filter(m=>m.on).map(m=>m.name+(m.dose?' '+m.dose:'')).join('، '))}${row('جهة الطوارئ',p.contactName?(p.contactName+' '+(p.contactPhone||'')):'')}
+  </div></div>`}
+function sheetSOS(){
+  openSheet('الطوارئ',`<div class="triage bad"><span class="small">رقم الإسعاف في ${esc(countryName())}</span><div class="callnum"><bdi>${esc(emNum())}</bdi></div>
+  <div class="row"><a class="btn danger" href="tel:${esc(emNum())}">${ic('phone')}اتصل الآن</a><button class="btn ghost" type="button" data-act="copy" data-txt="${esc(emNum())}">انسخ الرقم</button>${P().contactPhone?`<a class="btn ghost" href="tel:${esc(P().contactPhone)}">${esc(P().contactName||'جهة الطوارئ')}</a>`:''}</div>
+  <p class="small">إذا لم يعمل زر الاتصال فاطلب الرقم يدوياً. يمكنك تغيير الدولة والرقم من «ملفي».</p></div>
+  ${medID()}${knowHTML(true)}`);
+}
+
+/* ---------- report ---------- */
+function reportData(){
+  const p=P(),a=age(),rows=[];
+  for(const k of Object.keys(MET)){const r=last(k);if(!r)continue;const M=MET[k],c=M.cls(r.v);let avg='';
+    if(NUMERIC.includes(k)){const ser=S.readings.filter(x=>x.k===k&&Date.now()-x.ts<30*D).map(x=>M.ser(x.v));if(ser.length>1){const n=ser[0].length,dec=['temp','wt','tremor'].includes(k)?1:0;avg=[...Array(n)].map((_,i)=>(ser.reduce((s,x)=>s+x[i],0)/ser.length).toFixed(dec)).join('/')+' ('+ser.length+')'}}
+    rows.push({n:M.n,v:M.val(r.v)+' '+unitOf(k)+(M.sub&&M.sub(r.v)?' · '+M.sub(r.v):''),d:fD.format(r.ts),s:c.t,avg})}
+  return{p,a,rows,meds:S.meds.filter(m=>m.on)};
+}
+function reportInner(){
+  const {p,a,rows,meds}=reportData();
+  return `<h4>بيانات المريض</h4><table><tr><th>الاسم</th><td>${esc(p.name||'—')}</td><th>العمر</th><td>${a?a+' سنة':'—'}</td></tr><tr><th>الجنس</th><td>${p.sex==='m'?'ذكر':p.sex==='f'?'أنثى':'—'}</td><th>فصيلة الدم</th><td>${esc(p.blood||'—')}</td></tr><tr><th>الطول</th><td>${esc(p.height||'—')} سم</td><th>الوزن</th><td>${esc(p.weight||'—')} كغ</td></tr></table>
+  <h4>الأمراض والحساسية</h4><p style="margin:0">الأمراض المزمنة: ${esc(p.conditions||'لا يوجد')}<br>الحساسية: ${esc(p.allergies||'لا يوجد')}</p>
+  <h4>الأدوية الحالية</h4>${meds.length?`<table>${meds.map(m=>`<tr><td>${esc(m.name)}</td><td>${esc(m.dose||'')}</td><td>${(m.times||[]).join('، ')}</td></tr>`).join('')}</table>`:'<p style="margin:0">لا يوجد</p>'}
+  <h4>آخر القياسات</h4>${rows.length?`<table><tr><th>القياس</th><th>آخر قيمة</th><th>التاريخ</th><th>التقييم</th><th>متوسط 30 يوماً (العدد)</th></tr>${rows.map(r=>`<tr><td>${esc(r.n)}</td><td>${esc(r.v)}</td><td>${r.d}</td><td>${esc(r.s)}</td><td>${esc(r.avg||'—')}</td></tr>`).join('')}</table>`:'<p style="margin:0">لا توجد قياسات.</p>'}
+  <p class="foot">أُعدّ هذا التقرير في ${fLong.format(new Date())} من قياسات منزلية سجّلها المستخدم في تطبيق عيادة الجيب، وهي قياسات استرشادية تحتاج تأكيداً سريرياً.</p>`;
+}
+function reportText(){const {p,a,rows,meds}=reportData();return [`تقرير صحي — ${p.name||''}`,`العمر: ${a||'—'} | فصيلة الدم: ${p.blood||'—'} | الطول ${p.height||'—'} سم | الوزن ${p.weight||'—'} كغ`,`الأمراض المزمنة: ${p.conditions||'لا يوجد'}`,`الحساسية: ${p.allergies||'لا يوجد'}`,`الأدوية: ${meds.map(m=>m.name+' '+(m.dose||'')).join('، ')||'لا يوجد'}`,'',...rows.map(r=>`${r.n}: ${r.v} (${r.d}) — ${r.s}${r.avg?' | متوسط 30 يوماً '+r.avg:''}`)].join('\n')}
+function sheetReport(){
+  openSheet('تقرير للطبيب',`<div class="paper" id="rep">${reportInner()}</div><div class="row">
+    <button class="btn" type="button" id="repDl">${ic('down')}نزّل التقرير</button><button class="btn ghost" type="button" id="repCp">انسخ كنص</button>${IN_VIEWER?'':`<button class="btn ghost" type="button" id="repPr">اطبع / PDF</button>`}</div>`,b=>{
+    $('#repCp',b).onclick=()=>copyText(reportText());
+    $('#repDl',b).onclick=()=>saveFile('تقرير-صحي-'+dayKey()+'.html',`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>تقرير صحي</title><style>body{font:14px/1.7 Tahoma,Arial,sans-serif;color:#10302e;max-width:760px;margin:24px auto;padding:0 16px}h1{font-size:20px}h4{margin:18px 0 6px;font-size:15px}table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid #d3e0dd;padding:6px 4px;text-align:right}th{color:#557170;font-weight:500}.foot{color:#557170;font-size:12px}</style></head><body><h1>تقرير صحي — عيادة الجيب</h1>${reportInner()}</body></html>`);
+    const pr=$('#repPr',b);if(pr)pr.onclick=()=>{const w=window.open('','_blank');if(!w){toast('اسمح بالنوافذ المنبثقة للطباعة');return}w.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تقرير صحي</title><style>body{font:13px/1.7 Tahoma,Arial,sans-serif;margin:24px}table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid #ccc;padding:5px;text-align:right}h4{margin:16px 0 6px}</style></head><body><h2>تقرير صحي — عيادة الجيب</h2>${reportInner()}<script>onload=()=>print()<\/script></body></html>`);w.document.close()};
+  });
+}
+
+/* ---------- actions ---------- */
+const OPEN_TEST={heart:['قياس النبض بالكاميرا',testHeart],breath:['معدل التنفس',testBreath],tremor:['ثبات اليد',testTremor],react:['سرعة رد الفعل',testReact],acuity:['حدة البصر',testAcuity],color:['تمييز الألوان',testColor],amsler:['شبكة أمسلر',b=>testGrid(b,'amsler')],astig:['اللابؤرية',b=>testGrid(b,'astig')],hear:['فحص السمع',testHear]};
+const ACT={
+  go:a=>go(a.dataset.v),close:()=>closeSheet(),
+  vital:a=>{const k=a.dataset.k;if(last(k)){logK=k;go('log')}else sheetAdd(k)},
+  add:a=>sheetAdd(a.dataset.k),addPick:()=>sheetAddPick(),
+  test:a=>{const t=OPEN_TEST[a.dataset.t];if(t)openSheet(t[0],'',t[1])},
+  sym:a=>sheetSym(a.dataset.id),q:a=>sheetQ(a.dataset.q),chat:()=>sheetChat(),sos:()=>sheetSOS(),report:()=>sheetReport(),calib:()=>sheetCalib(),
+  logk:a=>{logK=a.dataset.k;if(view==='log')render();else go('log')},
+  copy:a=>copyText(a.dataset.txt),
+  water:a=>{ensureReal();const k=dayKey(),before=S.water[k]||0;S.water[k]=Math.max(0,before+(+a.dataset.ml));persist();render();if(before<waterGoal()&&S.water[k]>=waterGoal())toast('أحسنت! وصلت إلى هدف الماء اليوم')},
+  dose:a=>{ensureReal();const k=dayKey(),key=a.dataset.key;S.medLog[k]=S.medLog[k]||{};if(S.medLog[k][key])delete S.medLog[k][key];else S.medLog[k][key]=Date.now();persist();render()},
+  del:a=>{if(!a.classList.contains('confirm')){$$('.x.confirm').forEach(x=>{x.classList.remove('confirm');x.innerHTML=ic('trash')});a.classList.add('confirm');a.textContent='تأكيد الحذف';return}
+    S.readings=S.readings.filter(r=>r.id!==a.dataset.id);persist();render();toast('حُذفت القراءة')},
+  demoClear:()=>{ensureReal();persist();render();toast('بدأ ملفك الخاص')},
+  medToggle:a=>{const m=S.meds.find(x=>x.id===a.dataset.id);if(m){m.on=!m.on;persist();render()}},
+  medDel:a=>{if(!a.classList.contains('confirm')){a.classList.add('confirm');a.textContent='تأكيد';return}S.meds=S.meds.filter(x=>x.id!==a.dataset.id);persist();render()},
+  notif:async()=>{try{const r=await Notification.requestPermission();toast(r==='granted'?'فُعّلت التذكيرات':'لم يُسمح بالتنبيهات')}catch(e){toast('التنبيهات غير مدعومة هنا')}render()},
+  export:()=>saveFile('عيادة-الجيب-نسخة-'+dayKey()+'.json',JSON.stringify(S,null,1)),
+  import:()=>$('#importFile').click(),
+  wipe:a=>{if(!a.classList.contains('confirm')){a.classList.add('confirm');a.style.background='var(--bad)';a.style.color='var(--on-bad)';a.textContent='اضغط مرة أخرى لحذف كل شيء نهائياً';return}
+    const keep={country:P().country,emNum:P().emNum,gluUnit:P().gluUnit,pxmm:P().pxmm};S=blankState();Object.assign(S.profile,keep);persist();render();toast('حُذفت كل البيانات')}
+};
+document.addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(!a)return;const f=ACT[a.dataset.act];if(f){e.preventDefault();f(a,e)}});
+$('#sheetBg').addEventListener('click',e=>{if(e.target.id==='sheetBg')closeSheet()});
+addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#sheetBg').hidden)closeSheet()});
+$('#importFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const x=normalize(JSON.parse(rd.result));if(!x)throw 0;S=x;S.demo=false;persist();render();toast('استُعيدت بياناتك')}catch(err){toast('الملف غير صالح. اختر ملف نسخة احتياطية من عيادة الجيب.')}};rd.readAsText(f);e.target.value=''});
+document.addEventListener('change',e=>{
+  const el=e.target;if(el.id==='medForm'||el.closest('#medForm'))return;const f=el.dataset&&el.dataset.p;if(!f)return;
+  if(el.type==='radio'&&!el.checked)return;const wasDemo=ensureReal();const v=el.value;
+  P()[f]=String(v).trim();
+  if(f==='country'){const c=COUNTRIES.find(x=>x[0]===v);if(c)P().emNum=c[2];const n=$('#p-emNum');if(n)n.value=P().emNum}
+  if(f==='weight'&&+v>=20&&+v<=300){const lw=last('wt');if(!lw||Math.abs(lw.v.kg-+v)>=0.05){S.readings.push({id:uid(),k:'wt',ts:Date.now(),v:{kg:Math.round(+v*10)/10}})}}
+  persist();
+  if(wasDemo||f==='gluUnit'){render();return}
+  const bn=$('#bodyNums');if(bn)bn.innerHTML=bodyNums();
+  const nm=P().name?P().name.split(' ')[0]:'';$('#hello').textContent=(nm?'أهلاً '+nm+' · ':'')+fLong.format(new Date());
+});
+document.addEventListener('submit',e=>{
+  if(e.target.id!=='medForm')return;e.preventDefault();const name=$('#m-name').value.trim();if(!name){$('#m-name').focus();return}
+  const times=['m-t1','m-t2','m-t3'].map(i=>$('#'+i).value).filter(Boolean);if(!times.length)return;
+  ensureReal();S.meds.push({id:uid(),name,dose:$('#m-dose').value.trim(),times:[...new Set(times)].sort(),on:true});persist();render();toast('أُضيف '+name);
+});
+
+/* ---------- medication reminders ---------- */
+const notified=new Set();
+setInterval(()=>{
+  const now=new Date(),hm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'),log=S.medLog[dayKey()]||{};
+  for(const m of S.meds){if(!m.on||!(m.times||[]).includes(hm))continue;const key=dayKey()+m.id+hm;if(notified.has(key)||log[m.id+'@'+hm])continue;notified.add(key);
+    toast('حان موعد '+m.name+(m.dose?' · '+m.dose:''));
+    if(!IN_VIEWER&&'Notification' in window&&Notification.permission==='granted'){const opt={body:(m.dose||'')+' — الساعة '+hm,icon:'icon-192.png',tag:key};
+      if(navigator.serviceWorker&&navigator.serviceWorker.controller)navigator.serviceWorker.ready.then(r=>r.showNotification('موعد الدواء: '+m.name,opt)).catch(()=>{});else try{new Notification('موعد الدواء: '+m.name,opt)}catch(e){}}
+    if(view==='home'&&$('#sheetBg').hidden)render();
+  }
+},20000);
+
+/* ---------- boot ---------- */
+view=VIEWS[location.hash.slice(1)]?location.hash.slice(1):'home';
+render();
+connectRemote();
+if(IN_VIEWER){claude.use('sample').then(s=>{if(s){aiSample=s;if($('#sheetBg').hidden)render()}}).catch(()=>{})}
+if(!IN_VIEWER&&'serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+})();
+</script>
+<!--APP:END-->
+</body></html>
