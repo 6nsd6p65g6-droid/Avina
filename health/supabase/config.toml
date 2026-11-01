@@ -1,0 +1,6 @@
+# إعدادات Supabase CLI لعيادة الجيب
+project_id = "pocket-clinic"
+
+[functions.ai]
+# الدالة تتحقق من المستخدم بنفسها
+verify_jwt = false
