@@ -46,6 +46,13 @@
 - `claude-sonnet-5-5`: متوسط.
 - `claude-opus-5-5`: الأقوى والأدق (حوالي 0.03 إلى 0.06 دولار للسؤال).
 
+## الإعداد التلقائي (بدل الخطوات 1 و2 و3 و4 و5)
+إذا أضفت `SUPABASE_ACCESS_TOKEN` و`ANTHROPIC_API_KEY` إلى متغيرات البيئة، يمكن تشغيل:
+```bash
+ADMIN_EMAIL=بريدك@example.com bash health/supabase/deploy.sh
+```
+فينشئ قاعدة البيانات، ويضبط تسجيل الدخول، وينشر خادم الذكاء الاصطناعي، ويضع مفتاح Claude، ويجعلك مديراً.
+
 ## إذا لم يعمل الطبيب الذكي
 - **Edge Functions ← ai ← Logs** تعرض سبب الخطأ.
 - إذا ظهر خطأ عن المفتاح السري لقاعدة البيانات: أضف Secret باسم `SB_SECRET_KEY` وقيمته المفتاح السري من **Project Settings ← API Keys** (يبدأ بـ `sb_secret_`).
