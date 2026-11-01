@@ -405,9 +405,9 @@ const IP={
 const ic=(n,cls='')=>`<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${IP[n]||''}"/></svg>`;
 
 /* ---------- data ---------- */
-const COUNTRIES=[['LY','ليبيا','1515'],['SA','السعودية','997'],['AE','الإمارات','998'],['KW','الكويت','112'],['QA','قطر','999'],['BH','البحرين','999'],['OM','عُمان','9999'],['EG','مصر','123'],['JO','الأردن','911'],['IQ','العراق','122'],['LB','لبنان','140'],['MA','المغرب','15'],['DZ','الجزائر','14'],['TN','تونس','190'],['XX','دولة أخرى','112']];
+const COUNTRIES=[['LY','ليبيا','1412',[['مركز طب الطوارئ والدعم','1412'],['الإسعاف','191'],['غرفة طوارئ المستشفيات العامة','1415'],['الدفاع المدني','190'],['مديرية أمن طرابلس','193'],['الهلال الأحمر الليبي','0944863738']]],['SA','السعودية','997'],['AE','الإمارات','998'],['KW','الكويت','112'],['QA','قطر','999'],['BH','البحرين','999'],['OM','عُمان','9999'],['EG','مصر','123'],['JO','الأردن','911'],['IQ','العراق','122'],['LB','لبنان','140'],['MA','المغرب','15'],['DZ','الجزائر','14'],['TN','تونس','190'],['XX','دولة أخرى','112']];
 const KEY='pocket-clinic:v1';
-function blankState(){return{v:1,updated:0,demo:false,profile:{name:'',sex:'',birthYear:'',height:'',weight:'',blood:'',conditions:'',allergies:'',contactName:'',contactPhone:'',country:'LY',emNum:'1515',gluUnit:'mg',activity:'1.375',waist:'',neck:'',hip:'',pxmm:0},readings:[],meds:[],medLog:{},water:{}}}
+function blankState(){return{v:1,updated:0,demo:false,profile:{name:'',sex:'',birthYear:'',height:'',weight:'',blood:'',conditions:'',allergies:'',contactName:'',contactPhone:'',country:'LY',emNum:'1412',gluUnit:'mg',activity:'1.375',waist:'',neck:'',hip:'',pxmm:0},readings:[],meds:[],medLog:{},water:{}}}
 function demoState(){
   const s=blankState();s.demo=true;
   Object.assign(s.profile,{name:'سارة (مثال)',sex:'f',birthYear:'1988',height:'165',weight:'68',blood:'A+',conditions:'لا يوجد',allergies:'البنسلين',contactName:'أحمد',contactPhone:'0500000000',waist:'78',neck:'33',hip:'98'});
@@ -424,7 +424,7 @@ function demoState(){
 }
 function normalize(x){
   if(!x||typeof x!=='object'||!Array.isArray(x.readings))return null;
-  const b=blankState();x.profile=Object.assign(b.profile,x.profile||{});
+  const b=blankState();x.profile=Object.assign(b.profile,x.profile||{});if(x.profile.country==='LY'&&x.profile.emNum==='1515')x.profile.emNum='1412';
   x.meds=Array.isArray(x.meds)?x.meds:[];x.medLog=x.medLog||{};x.water=x.water||{};return x;
 }
 function loadLocal(){try{const t=localStorage.getItem(KEY);return t?normalize(JSON.parse(t)):null}catch(e){return null}}
@@ -434,6 +434,7 @@ function persist(){
   S.updated=Date.now();
   try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
   if(remote){clearTimeout(tSave);tSave=setTimeout(pushRemote,900)}
+  queuePush();
 }
 async function pushRemote(){
   if(!remote)return; if(writing){dirty=true;return}
@@ -761,9 +762,9 @@ const SYM=[
 ];
 function vDoctor(){
   return `<div class="stack">
-  <section class="panel ai-card" ${aiSample?'':'hidden'}><span class="aic">${ic('chat')}</span><div style="min-width:0"><h3>اسأل طبيب الجيب عن أي شيء</h3><p class="hint" style="margin-top:0">أعراضك، أو تحليل لا تفهمه، أو دواء، أو كيف يعمل جسمك. يقرأ ملفك وقراءاتك الأخيرة، ويخبرك بدرجة ثقته في كل إجابة.</p><button class="btn" type="button" data-act="chat" style="margin-top:8px">${ic('chat')}ابدأ المحادثة</button></div></section>
-  ${aiSample?encHTML():''}
-  ${!IN_VIEWER?`<div class="banner info">${ic('info')}<div><b>الطبيب الذكي والموسوعة الطبية</b><p>يعملان عند فتح التطبيق من داخل Claude. باقي الأقسام تعمل هنا كاملة.</p></div></div>`:''}
+  <section class="panel ai-card" ${aiVisible()?'':'hidden'}><span class="aic">${ic('chat')}</span><div style="min-width:0"><h3>اسأل طبيب الجيب عن أي شيء</h3><p class="hint" style="margin-top:0">أعراضك، أو تحليل لا تفهمه، أو دواء، أو كيف يعمل جسمك. يقرأ ملفك وقراءاتك الأخيرة، ويخبرك بدرجة ثقته في كل إجابة.</p><button class="btn" type="button" data-act="chat" style="margin-top:8px">${ic('chat')}ابدأ المحادثة</button>${CLOUD&&!cloud.session?'<p class="hint">يتطلب تسجيل الدخول (مجاناً).</p>':''}${quotaLine()}</div></section>
+  ${aiVisible()?encHTML():''}
+  ${!IN_VIEWER&&!CLOUD?`<div class="banner info">${ic('info')}<div><b>الطبيب الذكي والموسوعة الطبية</b><p>يعملان عند فتح التطبيق من داخل Claude. باقي الأقسام تعمل هنا كاملة.</p></div></div>`:''}
   <h2 class="sec">بماذا تشعر؟<small>اختر العَرَض لتعرف هل تحتاج طبيباً</small></h2>
   <div class="sym">${SYM.map(s=>`<button type="button" data-act="sym" data-id="${s.id}">${s.n}</button>`).join('')}</div>
   <h2 class="sec">الصحة النفسية<small>استبيانان معتمدان عالمياً</small></h2>
@@ -860,6 +861,7 @@ function fld(id,label,val,attrs=''){return `<div class="field"><label for="p-${i
 function vMe(){
   const p=P(),canNotify=!IN_VIEWER&&'Notification' in window;
   return `<div class="stack">
+  ${accountHTML()}
   <h2 class="sec">ملفي الطبي</h2>
   <section class="panel"><div class="form">
     ${fld('name','الاسم',p.name,'autocomplete="name"')}
@@ -911,7 +913,7 @@ function vMe(){
     <button class="btn ghost" type="button" data-act="export">${ic('down')}نسخة احتياطية</button>
     <button class="btn ghost" type="button" data-act="import">${ic('up')}استعادة</button>
     <button class="btn ghost" type="button" data-act="wipe" style="color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,transparent)">${ic('trash')}حذف كل البيانات</button>
-  </div><p class="hint">${remote?'تُحفظ بياناتك بشكل خاص في حسابك، ولا يراها غيرك.':'تُحفظ بياناتك على هذا الجهاز فقط ولا تُرسل إلى أي خادم. احتفظ بنسخة احتياطية دورياً.'}</p></section>
+  </div><p class="hint">${remote||(CLOUD&&cloud.session)?'تُحفظ بياناتك بشكل خاص في حسابك، ولا يراها غيرك.':'تُحفظ بياناتك على هذا الجهاز فقط. أنشئ حساباً لتحفظها في السحابة، أو احتفظ بنسخة احتياطية دورياً.'}</p></section>
   <p class="foot">عيادة الجيب ليست جهازاً طبياً معتمداً. القياسات بالكاميرا والحساسات تقريبية وتتأثر بالإضاءة والحركة ونوع الهاتف. لا تغيّر علاجك بناءً على التطبيق دون استشارة طبيبك.</p>
   </div>`;
 }
@@ -1313,7 +1315,7 @@ function sheetSym(id){
       else{lv='ok';h='يمكنك العناية بنفسك في المنزل';p=s.self}
       const chosen=[...em.map(i=>s.em[i]),...ur.map(i=>s.ur[i]),...md.map(i=>MODS[i])];
       $('#sOut',b).innerHTML=`<div class="sheet-b"><div class="triage ${lv}"><h3>${h}</h3><p>${esc(p)}</p>${lv==='bad'?`<div class="callnum"><bdi>${esc(emNum())}</bdi></div><div class="row"><a class="btn danger" href="tel:${esc(emNum())}">${ic('phone')}اتصل بالإسعاف</a><button class="btn ghost" type="button" data-act="copy" data-txt="${esc(emNum())}">انسخ الرقم</button></div>`:''}${lv!=='bad'?`<p class="small muted">عُد للتقييم إذا ساءت الأعراض أو ظهرت أي علامة خطر.</p>`:''}</div>
-      ${aiSample&&lv!=='bad'?`<button class="btn soft block" type="button" id="sAi">${ic('chat')}ناقش حالتك مع طبيب الجيب</button>`:''}<p class="foot">هذه أداة فرز إرشادية مبنية على علامات الخطر الشائعة، ولا تشخّص الحالة.</p></div>`;
+      ${aiVisible()&&lv!=='bad'?`<button class="btn soft block" type="button" id="sAi">${ic('chat')}ناقش حالتك مع طبيب الجيب</button>`:''}<p class="foot">هذه أداة فرز إرشادية مبنية على علامات الخطر الشائعة، ولا تشخّص الحالة.</p></div>`;
       const ai=$('#sAi',b);if(ai)ai.onclick=()=>sheetChat(`أعاني من: ${s.n}.${chosen.length?' وينطبق عليّ: '+chosen.join('، ')+'.':' ولا توجد لديّ علامات الخطر المذكورة.'} ماذا تنصحني؟`);
       $('#sOut',b).scrollIntoView({behavior:'smooth',block:'start'});
     };
@@ -1326,7 +1328,13 @@ async function callAI(input,o,json){
   const run=t=>json?aiSample.json(input,{...o,modelTier:t}):aiSample(input,{...o,modelTier:t});
   try{return await run(aiTier)}catch(e){if(e&&e.code==='invalid_request'&&aiTier!=='default'){aiTier='default';return await run('default')}throw e}
 }
-function aiErr(e){const c=e&&e.code;return c==='not_granted'?'لم يُسمح باستخدام Claude لهذه الصفحة. يمكنك السماح من قائمة الأذونات ثم المحاولة مجدداً.':c==='rate_limited'?'طلبات كثيرة الآن. انتظر قليلاً ثم أعد المحاولة.':c==='invalid_json'?'جاء الرد ناقصاً. أعد المحاولة.':c==='cancelled'?'أُوقف الطلب.':'تعذّر الحصول على إجابة الآن. حاول مرة أخرى.'}
+function aiErr(e){const c=e&&e.code;
+  if(c==='limit')return `وصلت إلى حد أسئلتك اليوم${e.limit?' ('+e.limit+')':''}. يتجدد الحد غداً، أو اشترك لتحصل على أسئلة أكثر.`;
+  if(c==='upgrade')return 'هذه الميزة متاحة لمشتركي برو وألترا.';
+  if(c==='auth')return 'سجّل الدخول لتستخدم الطبيب الذكي.';
+  if(c==='network')return 'تعذّر الاتصال بالإنترنت. تحقق من اتصالك ثم أعد المحاولة.';
+  if(c==='ai_failed'||c==='server')return 'تعذّر إنشاء الإجابة الآن. حاول مرة أخرى بعد قليل.';
+  return c==='not_granted'?'لم يُسمح باستخدام Claude لهذه الصفحة. يمكنك السماح من قائمة الأذونات ثم المحاولة مجدداً.':c==='rate_limited'?'طلبات كثيرة الآن. انتظر قليلاً ثم أعد المحاولة.':c==='invalid_json'?'جاء الرد ناقصاً. أعد المحاولة.':c==='cancelled'?'أُوقف الطلب.':'تعذّر الحصول على إجابة الآن. حاول مرة أخرى.'}
 
 /* ---------- medical encyclopedia (AI) ---------- */
 const SYSTEMS=[
@@ -1403,7 +1411,7 @@ function renderArt(body,topic,a){
   if(a.kind==='off_topic'){body.innerHTML=`<div class="banner info">${ic('info')}<div><b>الموضوع خارج نطاق الموسوعة</b><p>جرّب اسم مرض أو عضو أو عَرَض أو تحليل أو دواء.</p></div></div>`;return}
   const CF={high:['ok','معلومات راسخة علمياً'],medium:['warn','بعضها غير محسوم علمياً'],low:['bad','موضوع غير محسوم علمياً']}[a.confidence];
   body.innerHTML=`<article class="art sheet-b">
-    <div class="row"><span class="chip ${CF[0]}">${CF[1]}</span>${a.en?`<span class="small muted" dir="ltr">${esc(a.en)}</span>`:''}</div>
+    <div class="row"><span class="chip ${CF[0]}">${CF[1]}</span>${a.reviewed?`<span class="chip ok">${ic('check')}راجعه طبيب</span>`:''}${a.en?`<span class="small muted" dir="ltr">${esc(a.en)}</span>`:''}</div>
     ${a.summary?`<p class="lead">${esc(a.summary)}</p>`:''}
     ${a.personal?`<div class="banner info">${ic('user')}<div><b>بالنسبة لك</b><p>${esc(a.personal)}</p></div></div>`:''}
     ${a.urgent.length?`<div class="triage bad"><h3 style="font-size:16px">اتصل بالإسعاف (<bdi>${esc(emNum())}</bdi>) فوراً إذا ظهر:</h3><ul style="margin:0;padding-inline-start:20px;display:grid;gap:4px">${a.urgent.map(u=>`<li>${esc(u)}</li>`).join('')}</ul></div>`:''}
@@ -1411,20 +1419,19 @@ function renderArt(body,topic,a){
     ${a.uncertain?`<p class="hint" style="margin:0"><b>ما زال غير محسوم أو مختلفاً عليه:</b> ${esc(a.uncertain)}</p>`:''}
     ${a.refs.length?`<p class="foot" style="margin:0">مبني على المعرفة الطبية المعتمدة لدى: ${a.refs.map(esc).join('، ')}. هذه أسماء جهات مرجعية عامة وليست روابط لمصادر محددة.</p>`:''}
     <div id="verOut">${verHTML(a.ver)}</div>
-    <div class="row"><button class="btn" type="button" id="artAsk">${ic('chat')}اسأل سؤال متابعة</button>${a.ver?'':`<button class="btn ghost" type="button" id="artVer">${ic('check')}مراجعة ثانية للدقة</button>`}<button class="btn ghost" type="button" id="artRe">أعد الكتابة</button></div>
+    <div class="row"><button class="btn" type="button" id="artAsk">${ic('chat')}اسأل سؤال متابعة</button>${a.ver?'':`<button class="btn ghost" type="button" id="artVer">${ic('check')}مراجعة ثانية للدقة</button>`}${!CLOUD||(cloud.status&&cloud.status.is_admin)?`<button class="btn ghost" type="button" id="artRe">أعد الكتابة</button>`:''}</div>
     <p class="foot" style="margin:0">معلومات تثقيفية عامة كتبها نموذج ذكاء اصطناعي، وقد تحتوي أخطاء. لا تغني عن الطبيب، ولا تبدأ دواءً أو توقفه بناءً عليها.</p>
   </article>`;
   $('#artAsk',body).onclick=()=>sheetChat(null,`بخصوص «${topic}»: `);
-  $('#artRe',body).onclick=()=>sheetArticle(topic,true);
+  const rb=$('#artRe',body);if(rb)rb.onclick=async()=>{if(CLOUD&&cloud.sb){rb.disabled=true;await cloud.sb.from('articles').delete().eq('topic',topic)}sheetArticle(topic,true)};
   const vb=$('#artVer',body);
   if(vb)vb.onclick=async()=>{vb.disabled=true;const out=$('#verOut',body);out.innerHTML=`<div class="loading" style="padding:12px 0"><div class="spin"></div><span class="hint" style="margin:0">مراجع ثانٍ يدقق المعلومات… قد يستغرق ذلك دقيقة.</span></div>`;
-    try{const r=await callAI(verPrompt(topic,a),{},true);const v={v:['accurate','minor','major'].includes(r&&r.verdict)?r.verdict:'minor',summary:typeof r.summary==='string'?r.summary:'',issues:(Array.isArray(r&&r.issues)?r.issues:[]).filter(i=>i&&typeof i.claim==='string').map(i=>({claim:i.claim,fix:typeof i.fix==='string'?i.fix:''}))};
-      a.ver=v;artPut(topic,a);out.innerHTML=verHTML(v);vb.remove()}
-    catch(e){out.innerHTML=`<p class="err">${esc(aiErr(e))}</p>`;vb.disabled=false}};
+    try{const v=normVer(await aiVerify(topic,a));a.ver=v;artPut(topic,a);out.innerHTML=verHTML(v);vb.remove();if(cloud.session)refreshStatus()}
+    catch(e){out.innerHTML=`<div class="banner warn">${ic('alert')}<div><p>${esc(aiErr(e))}</p>${upsell(e)}</div></div>`;vb.disabled=false}};
 }
 function sheetArticle(topic,force){
   topic=String(topic||'').replace(/\s+/g,' ').trim().slice(0,120);if(!topic)return;
-  if(!aiSample){toast('الموسوعة تعمل عند فتح التطبيق من داخل Claude');return}
+  if(!aiOn()){if(CLOUD)sheetAccount('in','سجّل الدخول لتقرأ الموسوعة الطبية.');else toast('الموسوعة تعمل عند فتح التطبيق من داخل Claude');return}
   const cached=!force&&artCache()[topic];
   openSheet(topic,`<div id="artBody"></div>`,b=>{
     const body=$('#artBody',b);
@@ -1433,10 +1440,10 @@ function sheetArticle(topic,force){
     body.innerHTML=`<div class="loading"><div class="spin"></div><b>يُكتب مدخل «${esc(topic)}»</b><span class="hint" id="artT" style="margin:0">يراجع المعلومات بعناية قبل الكتابة، وقد يستغرق ذلك حتى دقيقة.</span><button class="btn ghost sm" type="button" id="artStop">إيقاف</button></div>`;
     const iv=setInterval(()=>{const el=$('#artT',b);if(el)el.textContent='يفكّر بعمق قبل الكتابة… '+Math.round((Date.now()-t0)/1000)+' ث'},1000);
     $('#artStop',b).onclick=()=>ctl.abort();
-    callAI(artPrompt(topic),{signal:ctl.signal},true).then(r=>{clearInterval(iv);if(!live)return;const a=cleanArt(r);
+    aiArticle(topic,{signal:ctl.signal}).then(r=>{clearInterval(iv);if(!live)return;const a=cleanArt(r.article);if(a&&r.verify)a.ver=normVer(r.verify);if(a&&r.reviewed)a.reviewed=true;if(cloud.session)refreshStatus();
         if(!a){body.innerHTML=`<p class="err">جاء الرد ناقصاً. أعد المحاولة.</p><button class="btn" type="button" id="artAgain">أعد المحاولة</button>`;$('#artAgain',body).onclick=()=>sheetArticle(topic,true);return}
         if(a.kind!=='off_topic')artPut(topic,a);renderArt(body,topic,a)})
-      .catch(e=>{clearInterval(iv);if(!live)return;body.innerHTML=`<div class="banner warn">${ic('alert')}<div><b>لم يكتمل المدخل</b><p>${esc(aiErr(e))}</p></div></div><button class="btn" type="button" id="artAgain">أعد المحاولة</button>`;$('#artAgain',body).onclick=()=>sheetArticle(topic,true)});
+      .catch(e=>{clearInterval(iv);if(!live)return;body.innerHTML=`<div class="banner warn">${ic('alert')}<div><b>${e&&(e.code==='upgrade'||e.code==='limit')?'هذا المدخل غير متاح الآن':'لم يكتمل المدخل'}</b><p>${esc(aiErr(e))}</p>${upsell(e)}</div></div><button class="btn" type="button" id="artAgain">أعد المحاولة</button>`;$('#artAgain',body).onclick=()=>sheetArticle(topic,true)});
     return()=>{live=false;clearInterval(iv);ctl.abort()};
   });
 }
@@ -1470,22 +1477,24 @@ function rules(){return `أنت «طبيب الجيب»، مساعد طبي دا
 ${aiContext()}`}
 function chatMD(t){return mdLite(t).replace(/<p>\s*درجة الثقة\s*[:：]\s*(عالية|متوسطة|منخفضة)[.\s]*<\/p>/,(m,l)=>`<span class="chip conf ${l==='عالية'?'ok':l==='متوسطة'?'warn':'bad'}">درجة الثقة: ${l}</span>`)}
 function sheetChat(prefill,draft){
-  if(!aiSample){toast('المساعد الذكي غير متاح هنا');return}
+  if(!aiOn()){if(CLOUD)sheetAccount('in','سجّل الدخول لتتحدث مع طبيب الجيب.');else toast('المساعد الذكي غير متاح هنا');return}
   openSheet('طبيب الجيب',`<p class="hint" style="margin:0">مساعد ذكي للإرشاد العام، لا يغني عن الطبيب. في الطوارئ اتصل بـ<bdi>${esc(emNum())}</bdi>.</p>
   <div class="chat" id="chLog"></div>
   <div class="sugg" id="chSug">${['عندي صداع منذ يومين مع غثيان','كيف أفهم نتيجة تحليل الدم الشامل؟','ما الفرق بين السكري الأول والثاني؟','ماذا تعني قراءات ضغطي الأخيرة؟','كيف أحسّن نومي؟'].map(t=>`<button type="button" data-s="${esc(t)}">${t}</button>`).join('')}</div>
   <form class="chat-f" id="chF"><textarea id="chIn" rows="2" placeholder="صف ما تشعر به…" aria-label="رسالتك"></textarea><button class="btn" type="submit" id="chSend">إرسال</button><button class="btn ghost" type="button" id="chStop" hidden>إيقاف</button></form>`,b=>{
-    const log=$('#chLog',b),inp=$('#chIn',b),send=$('#chSend',b),stop=$('#chStop',b),sug=$('#chSug',b);let ctl=null,busy=false;
-    function draw(){log.innerHTML=chat.turns.map(t=>`<div class="msg ${t.role==='user'?'u':'a'}">${t.role==='user'?esc(t.content).replace(/\n/g,'<br>'):chatMD(t.content)}</div>`).join('');sug.hidden=chat.turns.length>0}
+    const log=$('#chLog',b),inp=$('#chIn',b),send=$('#chSend',b),stop=$('#chStop',b),sug=$('#chSug',b);let ctl=null,busy=false,notice='';
+    function draw(){log.innerHTML=chat.turns.map(t=>`<div class="msg ${t.role==='user'?'u':'a'}">${t.role==='user'?esc(t.content).replace(/\n/g,'<br>'):chatMD(t.content)}</div>`).join('')+notice+quotaLine();sug.hidden=chat.turns.length>0}
     async function ask(text){
       if(busy||!text.trim())return;busy=true;chat.turns.push({role:'user',content:text.trim()});draw();inp.value='';
       const bub=document.createElement('div');bub.className='msg a';bub.textContent='يفكّر بعمق قبل الإجابة…';log.append(bub);bub.scrollIntoView({block:'end'});
       send.hidden=true;stop.hidden=false;ctl=new AbortController();
-      try{const r=await callAI([{role:'user',content:rules()},{role:'assistant',content:'فهمت. سأتبع هذه التعليمات.'},...chat.turns],{cache:false,signal:ctl.signal,onText:({text})=>{bub.innerHTML=chatMD(text)}});
+      notice='';
+      try{const r=await aiChat(chat.turns,{signal:ctl.signal,onText:({text})=>{bub.innerHTML=chatMD(text)}});
         chat.turns.push({role:'assistant',content:r.text});}
       catch(e){const code=e&&e.code;if(e&&e.text){chat.turns.push({role:'assistant',content:e.text})}
-        else{chat.turns.pop();}
-        if(code!=='cancelled')toast(code==='not_granted'?'لم يُسمح باستخدام المساعد':code==='rate_limited'?'طلبات كثيرة، انتظر قليلاً ثم أعد المحاولة':'تعذّر الرد الآن، حاول مرة أخرى')}
+        else{chat.turns.pop();inp.value=text}
+        if(code==='limit'||code==='upgrade'||code==='auth')notice=`<div class="banner warn">${ic('alert')}<div><p>${esc(aiErr(e))}</p>${upsell(e)}</div></div>`;
+        else if(code!=='cancelled')toast(aiErr(e))}
       busy=false;send.hidden=false;stop.hidden=true;draw();const lm=log.lastElementChild;if(lm)lm.scrollIntoView({block:'end'});
     }
     $('#chF',b).onsubmit=e=>{e.preventDefault();ask(inp.value)};
@@ -1497,6 +1506,8 @@ function sheetChat(prefill,draft){
 }
 
 /* ---------- SOS + medical ID ---------- */
+function emList(){const c=COUNTRIES.find(x=>x[0]===P().country);if(!c||!c[3])return '';
+  return `<section class="panel"><h3>أرقام الطوارئ في ${esc(c[1])}</h3><div class="kv">${c[3].map(([n,num])=>`<div><span>${esc(n)}</span><span class="row" style="flex-wrap:nowrap;gap:4px"><a class="btn sm ghost" href="tel:${esc(num)}" dir="ltr">${esc(num)}</a><button class="x" type="button" data-act="copy" data-txt="${esc(num)}" aria-label="انسخ ${esc(num)}">نسخ</button></span></div>`).join('')}</div></section>`}
 function medID(){const p=P(),a=age();const row=(k,v)=>v?`<div><span>${k}</span><b style="font-family:var(--f-body);white-space:normal;text-align:left">${esc(v)}</b></div>`:'';
   return `<div class="mid"><div class="mid-h"><span>البطاقة الطبية</span><span>${esc(p.name||'')}</span></div><div class="kv">
   ${row('العمر',a?a+' سنة':'')}${row('فصيلة الدم',p.blood)}${row('الحساسية',p.allergies||'لم تُسجَّل')}${row('الأمراض المزمنة',p.conditions)}${row('الأدوية',S.meds.filter(m=>m.on).map(m=>m.name+(m.dose?' '+m.dose:'')).join('، '))}${row('جهة الطوارئ',p.contactName?(p.contactName+' '+(p.contactPhone||'')):'')}
@@ -1505,7 +1516,7 @@ function sheetSOS(){
   openSheet('الطوارئ',`<div class="triage bad"><span class="small">رقم الإسعاف في ${esc(countryName())}</span><div class="callnum"><bdi>${esc(emNum())}</bdi></div>
   <div class="row"><a class="btn danger" href="tel:${esc(emNum())}">${ic('phone')}اتصل الآن</a><button class="btn ghost" type="button" data-act="copy" data-txt="${esc(emNum())}">انسخ الرقم</button>${P().contactPhone?`<a class="btn ghost" href="tel:${esc(P().contactPhone)}">${esc(P().contactName||'جهة الطوارئ')}</a>`:''}</div>
   <p class="small">إذا لم يعمل زر الاتصال فاطلب الرقم يدوياً. يمكنك تغيير الدولة والرقم من «ملفي».</p></div>
-  ${medID()}${knowHTML(true)}`);
+  ${emList()}${medID()}${knowHTML(true)}`);
 }
 
 /* ---------- report ---------- */
@@ -1534,6 +1545,272 @@ function sheetReport(){
   });
 }
 
+/* ---------- cloud: Supabase (login, sync, AI server, plans, payments) ---------- */
+const SUPA_URL='';   // ← عنوان مشروع Supabase، مثل: https://abcdefgh.supabase.co
+const SUPA_KEY='sb_publishable_17dzfHpHrzZ-bF4U6pPIZw_tw64GvTf';
+const CLOUD=!IN_VIEWER&&/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(SUPA_URL)&&!!SUPA_KEY;
+const cloud={sb:null,session:null,status:null,plans:[],settings:{},ready:false,failed:false,pushT:0,pushing:false,pushAgain:false};
+const aiVisible=()=>!!aiSample||CLOUD;
+const aiOn=()=>!!aiSample||(CLOUD&&!!cloud.session);
+const METHODS={transfer:'حوالة مصرفية',libyana:'كرت ليبيانا',madar:'كرت المدار'};
+const PSTAT={pending:['warn','قيد المراجعة'],approved:['ok','مقبول'],rejected:['bad','مرفوض']};
+const appURL=()=>location.origin+location.pathname;
+const setting=(k,d)=>{const v=cloud.settings[k];return v==null?d:v};
+const planOf=id=>cloud.plans.find(x=>x.id===id);
+const usd=n=>'$'+(+n).toFixed(+n%1?2:0);
+const lyd=n=>`<span style="white-space:nowrap"><bdi class="num">${(Math.round(n*100)/100).toLocaleString('ar-u-nu-latn')}</bdi> <span style="font-family:var(--f-body)">د.ل</span></span>`;
+function loadScript(src){return new Promise((res,rej)=>{const sc=document.createElement('script');sc.src=src;sc.onload=res;sc.onerror=rej;document.head.append(sc)})}
+async function cloudInit(){
+  if(!CLOUD)return;
+  try{await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js')}catch(e){cloud.failed=true;render();return}
+  cloud.sb=window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  cloud.sb.auth.onAuthStateChange((ev,session)=>{
+    const had=!!cloud.session;cloud.session=session;
+    if(ev==='PASSWORD_RECOVERY')setTimeout(sheetNewPassword,300);
+    if(session&&(!had||ev==='SIGNED_IN'))setTimeout(afterLogin,0);
+    if(!session&&had){cloud.status=null;setTimeout(render,0)}
+  });
+  await loadPublic();cloud.ready=true;render();
+}
+async function loadPublic(){
+  try{const [p,st]=await Promise.all([cloud.sb.from('plans').select('*').order('sort'),cloud.sb.from('settings').select('key,value')]);
+    if(p.data)cloud.plans=p.data;if(st.data){cloud.settings={};st.data.forEach(r=>cloud.settings[r.key]=r.value)}}catch(e){}
+}
+async function refreshStatus(){if(!cloud.sb||!cloud.session)return;try{const {data,error}=await cloud.sb.rpc('my_status');if(!error&&data)cloud.status=data}catch(e){}}
+async function afterLogin(){await Promise.all([refreshStatus(),pullState()]);if($('#sheetBg').hidden)render();else{const t=$('#sheetT').textContent;if(t==='تسجيل الدخول'||t==='حساب جديد')closeSheet()}}
+async function pullState(){
+  try{const uid=cloud.session.user.id;const {data,error}=await cloud.sb.from('user_state').select('data,updated_at').eq('user_id',uid).maybeSingle();if(error)return;
+    const rs=data?normalize(data.data):null,rU=data?new Date(data.updated_at).getTime():0;
+    if(rs&&(S.demo||rU>(S.updated||0))){S=rs;S.updated=rU;S.demo=false;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+    else if(!S.demo&&(S.updated||0)>rU)pushState();}catch(e){}
+}
+function queuePush(){if(!CLOUD||!cloud.session||S.demo)return;clearTimeout(cloud.pushT);cloud.pushT=setTimeout(pushState,1200)}
+async function pushState(){
+  if(!cloud.session||S.demo)return;if(cloud.pushing){cloud.pushAgain=true;return}
+  cloud.pushing=true;
+  try{await cloud.sb.from('user_state').upsert({user_id:cloud.session.user.id,data:S,updated_at:new Date(S.updated||Date.now()).toISOString()})}catch(e){}
+  cloud.pushing=false;if(cloud.pushAgain){cloud.pushAgain=false;pushState()}
+}
+/* AI router: Claude viewer (artifact) or your Supabase server (installed app) */
+async function cloudFetch(payload,signal){
+  if(!cloud.sb)throw {code:'auth'};
+  const {data}=await cloud.sb.auth.getSession();const tok=data&&data.session&&data.session.access_token;if(!tok)throw {code:'auth'};
+  let res;
+  try{res=await fetch(SUPA_URL+'/functions/v1/ai',{method:'POST',headers:{'Content-Type':'application/json',apikey:SUPA_KEY,Authorization:'Bearer '+tok},body:JSON.stringify(payload),signal})}
+  catch(e){throw {code:e&&e.name==='AbortError'?'cancelled':'network'}}
+  if(!res.ok){let j={};try{j=await res.json()}catch(e){}throw {code:j.error||'server',limit:j.limit,need:j.need}}
+  return res;
+}
+async function aiJSON(payload,signal){const res=await cloudFetch(payload,signal);let j;try{j=JSON.parse((await res.text()).trim())}catch(e){throw {code:'invalid_json'}}if(j&&j.error)throw {code:j.error};return j}
+async function aiChat(turns,o){
+  if(aiSample)return callAI([{role:'user',content:rules()},{role:'assistant',content:'فهمت. سأتبع هذه التعليمات.'},...turns],{cache:false,signal:o.signal,onText:o.onText});
+  const res=await cloudFetch({purpose:'chat',turns,context:aiContext(),emNum:emNum()},o.signal);
+  const u=res.headers.get('X-Quota-Used');if(cloud.status&&u&&u!=='0')cloud.status.used_today=+u;
+  const rd=res.body.getReader(),dec=new TextDecoder();let text='';
+  try{for(;;){const {done,value}=await rd.read();if(done)break;text+=dec.decode(value,{stream:true});o.onText&&o.onText({text})}}
+  catch(e){if(text)throw {code:'cancelled',text};throw {code:e&&e.name==='AbortError'?'cancelled':'network'}}
+  return {text:text+dec.decode()};
+}
+async function aiArticle(topic,o){if(aiSample)return {article:await callAI(artPrompt(topic),{signal:o.signal},true)};return aiJSON({purpose:'article',topic},o.signal)}
+async function aiVerify(topic,a){if(aiSample)return callAI(verPrompt(topic,a),{},true);return (await aiJSON({purpose:'verify',topic})).verify}
+function normVer(r){if(r&&r.v)return r;const ok=['accurate','minor','major'];return {v:ok.includes(r&&r.verdict)?r.verdict:'minor',summary:r&&typeof r.summary==='string'?r.summary:'',issues:(Array.isArray(r&&r.issues)?r.issues:[]).filter(i=>i&&typeof i.claim==='string').map(i=>({claim:i.claim,fix:typeof i.fix==='string'?i.fix:''}))}}
+function upsell(e){const c=e&&e.code;if(!CLOUD)return '';if(c==='auth')return `<div class="row" style="margin-top:8px"><button class="btn sm" type="button" data-act="account">تسجيل الدخول</button></div>`;
+  if(c==='limit'||c==='upgrade')return `<div class="row" style="margin-top:8px"><button class="btn sm" type="button" data-act="plans">عرض الاشتراكات</button></div>`;return ''}
+function quotaLine(){const st=cloud.status;if(!CLOUD||!st||st.is_admin||aiSample)return '';const left=Math.max(0,st.daily_ai-st.used_today);
+  return `<p class="hint" style="text-align:center;margin:0">متبقٍ لك اليوم: <bdi>${left}</bdi> من <bdi>${st.daily_ai}</bdi> سؤال · خطة ${esc(st.name)}${st.plan!=='ultra'?' · <button type="button" class="linkish small" data-act="plans">ترقية</button>':''}</p>`}
+
+/* account */
+function authMsg(e){const c=(e&&(e.code||e.error_code))||'',m=(e&&e.message)||'';
+  if(c==='invalid_credentials'||/Invalid login/i.test(m))return 'البريد أو كلمة المرور غير صحيحة.';
+  if(c==='email_not_confirmed'||/not confirmed/i.test(m))return 'أكّد بريدك أولاً من الرابط الذي أرسلناه إليك، ثم سجّل الدخول.';
+  if(c==='user_already_exists'||/already registered/i.test(m))return 'هذا البريد مسجّل مسبقاً. سجّل الدخول بدلاً من ذلك.';
+  if(c==='weak_password'||/password/i.test(m)&&/least|weak|short/i.test(m))return 'كلمة المرور ضعيفة. استخدم 8 أحرف على الأقل.';
+  if(/rate limit|too many/i.test(m)||c.includes('rate_limit'))return 'محاولات كثيرة. انتظر قليلاً ثم أعد المحاولة.';
+  if(/fetch|network/i.test(m))return 'تعذّر الاتصال بالإنترنت.';
+  return 'حدث خطأ: '+(m||'غير معروف');}
+function sheetAccount(mode='in',why=''){
+  if(!CLOUD){toast('الحسابات غير متاحة في هذا العرض');return}
+  if(!cloud.sb){toast(cloud.failed?'تعذّر الاتصال بالخادم. تحقق من الإنترنت.':'جارٍ الاتصال… أعد المحاولة بعد لحظات');return}
+  const up=mode==='up';
+  openSheet(up?'حساب جديد':'تسجيل الدخول',`${why?`<div class="banner info">${ic('info')}<div><p>${esc(why)}</p></div></div>`:''}
+  <p class="muted" style="margin:0">${up?'أنشئ حساباً لتحفظ بياناتك الصحية في السحابة وتستخدم الطبيب الذكي من أي جهاز.':'سجّل الدخول ببريدك الإلكتروني.'}</p>
+  <form id="acF" class="sheet-b" novalidate>
+    <div class="field"><label for="ac-email">البريد الإلكتروني</label><input id="ac-email" type="email" dir="ltr" autocomplete="email" required></div>
+    <div class="field"><label for="ac-pass">كلمة المرور</label><input id="ac-pass" type="password" dir="ltr" autocomplete="${up?'new-password':'current-password'}" minlength="8" required></div>
+    <p class="err" id="acErr"></p>
+    <button class="btn block" type="submit" id="acGo">${up?'أنشئ الحساب':'دخول'}</button>
+    <div class="between small"><button type="button" class="linkish" id="acSwap">${up?'لديك حساب؟ سجّل الدخول':'ليس لديك حساب؟ أنشئ حساباً'}</button>${up?'':'<button type="button" class="linkish" id="acForgot">نسيت كلمة المرور؟</button>'}</div>
+  </form><div id="acOut"></div>`,b=>{
+    const f=$('#acF',b),err=$('#acErr',b),go=$('#acGo',b),em=()=>$('#ac-email',b).value.trim(),pw=()=>$('#ac-pass',b).value;
+    $('#acSwap',b).onclick=()=>sheetAccount(up?'in':'up',why);
+    const fg=$('#acForgot',b);if(fg)fg.onclick=async()=>{if(!/^\S+@\S+\.\S+$/.test(em())){err.textContent='اكتب بريدك أولاً ثم اضغط «نسيت كلمة المرور».';return}
+      fg.disabled=true;const {error}=await cloud.sb.auth.resetPasswordForEmail(em(),{redirectTo:appURL()});fg.disabled=false;
+      err.textContent='';$('#acOut',b).innerHTML=error?`<p class="err">${esc(authMsg(error))}</p>`:`<div class="result ok"><p>أرسلنا رابط تغيير كلمة المرور إلى <bdi>${esc(em())}</bdi>. افتحه من هذا الهاتف.</p></div>`};
+    f.onsubmit=async e=>{e.preventDefault();err.textContent='';
+      if(!/^\S+@\S+\.\S+$/.test(em()))return err.textContent='اكتب بريداً إلكترونياً صحيحاً.';
+      if(pw().length<8)return err.textContent='كلمة المرور 8 أحرف على الأقل.';
+      go.disabled=true;go.textContent='لحظة…';
+      const r=up?await cloud.sb.auth.signUp({email:em(),password:pw(),options:{emailRedirectTo:appURL()}}):await cloud.sb.auth.signInWithPassword({email:em(),password:pw()});
+      go.disabled=false;go.textContent=up?'أنشئ الحساب':'دخول';
+      if(r.error){err.textContent=authMsg(r.error);return}
+      if(up&&!r.data.session){f.hidden=true;$('#acOut',b).innerHTML=`<div class="result ok"><div class="r-top"><b>تحقق من بريدك</b></div><p>أرسلنا رابط تأكيد إلى <bdi>${esc(em())}</bdi>. افتح الرابط من هذا الهاتف، ثم سجّل الدخول.</p></div>`;return}
+      toast('أهلاً بك!');
+    };
+    setTimeout(()=>$('#ac-email',b).focus(),150);
+  });
+}
+function sheetNewPassword(){
+  openSheet('كلمة مرور جديدة',`<form id="npF" class="sheet-b"><div class="field"><label for="np-pass">كلمة المرور الجديدة</label><input id="np-pass" type="password" dir="ltr" autocomplete="new-password" minlength="8" required></div><p class="err" id="npErr"></p><button class="btn block" type="submit">احفظ</button></form>`,b=>{
+    $('#npF',b).onsubmit=async e=>{e.preventDefault();const v=$('#np-pass',b).value;if(v.length<8){$('#npErr',b).textContent='8 أحرف على الأقل.';return}
+      const {error}=await cloud.sb.auth.updateUser({password:v});if(error){$('#npErr',b).textContent=authMsg(error);return}toast('تم تغيير كلمة المرور');closeSheet()}});
+}
+async function logout(){await pushState();await cloud.sb.auth.signOut();const p=P(),keep={country:p.country,emNum:p.emNum,gluUnit:p.gluUnit,pxmm:p.pxmm};S=blankState();Object.assign(S.profile,keep);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}cloud.status=null;render();toast('سجّلت الخروج')}
+function accountHTML(){
+  if(!CLOUD)return '';
+  if(!cloud.ready)return `<section class="panel"><p class="hint" style="margin:0">${cloud.failed?'تعذّر الاتصال بالخادم. تحقق من الإنترنت ثم أعد فتح التطبيق.':'جارٍ الاتصال بحسابك…'}</p></section>`;
+  if(!cloud.session)return `<section class="panel ai-card"><span class="aic">${ic('user')}</span><div style="min-width:0"><h3>احفظ بياناتك في حسابك</h3><p class="hint" style="margin-top:0">أنشئ حساباً مجانياً لتحفظ ملفك الصحي في السحابة، وتستخدم الطبيب الذكي والموسوعة من أي جهاز.</p><div class="row" style="margin-top:8px"><button class="btn" type="button" data-act="account" data-mode="up">أنشئ حساباً</button><button class="btn ghost" type="button" data-act="account">تسجيل الدخول</button></div></div></section>`;
+  const st=cloud.status,em=cloud.session.user.email||'';
+  return `<section class="panel"><div class="between"><div style="min-width:0"><h3 style="margin:0">حسابي</h3><span class="small muted" dir="ltr">${esc(em)}</span></div>${st?`<span class="chip ${st.plan==='free'?'':'ok'}">${esc(st.name)}</span>`:''}</div>
+    ${st?`<div class="kv" style="margin-top:6px">${st.expires_at?`<div><span>ينتهي الاشتراك</span><b>${fD.format(new Date(st.expires_at))}</b></div>`:''}<div><span>أسئلة الطبيب الذكي اليوم</span>${st.is_admin?'<b style="font-family:var(--f-body)">بلا حد (مدير)</b>':'<b>'+st.used_today+' / '+st.daily_ai+'</b>'}</div></div>`:''}
+    <div class="row" style="margin-top:10px"><button class="btn" type="button" data-act="plans">${ic('bolt')}الاشتراكات</button>${st&&st.is_admin?`<button class="btn soft" type="button" data-act="admin">${ic('grid')}لوحة التحكم</button>`:''}<button class="btn ghost" type="button" data-act="logout">تسجيل الخروج</button></div>
+    <p class="hint">تُحفظ بياناتك تلقائياً في حسابك ولا يراها غيرك.</p></section>`;
+}
+
+/* plans + checkout */
+async function sheetPlans(){
+  if(!CLOUD)return;
+  if(!cloud.plans.length)await loadPublic();
+  const st=cloud.status,rate=+setting('lyd_rate',0);
+  openSheet('الاشتراكات',`${!cloud.session?`<div class="banner info">${ic('info')}<div><p>سجّل الدخول أولاً لتشترك.</p><div class="row" style="margin-top:8px"><button class="btn sm" type="button" data-act="account">تسجيل الدخول</button></div></div></div>`:''}
+  <div class="tiles" style="grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr))">${cloud.plans.map(pl=>{const cur=st&&st.plan===pl.id,feats=Array.isArray(pl.features)?pl.features:[];
+    return `<div class="tile" style="cursor:default;${pl.id==='ultra'?'border-color:var(--accent)':''}"><div class="between"><b style="font-size:17px">${esc(pl.name)}</b>${cur?'<span class="chip ok">خطتك</span>':pl.id==='ultra'?'<span class="chip info">الأدق</span>':''}</div>
+      <div class="big" style="margin:0">${+pl.price_usd?`<bdi>${usd(pl.price_usd)}</bdi> <small>شهرياً${rate?' · ≈ '+lyd(pl.price_usd*rate):''}</small>`:'<span style="font-family:var(--f-body)">مجاناً</span>'}</div>
+      <ul style="margin:4px 0 8px;padding-inline-start:18px;font-size:13px;display:grid;gap:3px">${feats.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>
+      ${+pl.price_usd&&cloud.session?`<button class="btn ${pl.id==='ultra'?'':'soft'} block" type="button" data-act="checkout" data-plan="${esc(pl.id)}" style="margin-top:auto">${cur?'جدّد':'اشترك'}</button>`:''}</div>`}).join('')}</div>
+  ${cloud.session?`<section><h3 class="sec" style="margin:0 0 6px;font-size:15px">طلباتي</h3><div id="myPays"><p class="hint">جارٍ التحميل…</p></div></section>`:''}
+  ${setting('support','')?`<p class="hint">للاستفسار: <bdi dir="ltr">${esc(setting('support',''))}</bdi></p>`:''}`,b=>{if(cloud.session)loadMyPays($('#myPays',b))});
+}
+async function loadMyPays(el){
+  const {data,error}=await cloud.sb.from('payments').select('*').eq('user_id',cloud.session.user.id).order('created_at',{ascending:false}).limit(10);
+  if(!el.isConnected)return;if(error){el.innerHTML='<p class="err">تعذّر تحميل الطلبات.</p>';return}
+  el.innerHTML=data.length?`<div class="rlist">${data.map(x=>`<div class="rd"><span class="m"><b>${esc((planOf(x.plan)||{}).name||x.plan)} · ${x.months} ${x.months>2?'أشهر':'شهر'} · ${METHODS[x.method]||x.method}</b><br>${fDT.format(new Date(x.created_at))} · <bdi>${usd(x.amount_usd)}</bdi>${x.amount_lyd?' · '+lyd(x.amount_lyd):''}${x.admin_note?'<br>ملاحظة: '+esc(x.admin_note):''}</span><span class="chip ${PSTAT[x.status][0]}">${PSTAT[x.status][1]}</span></div>`).join('')}</div>`:'<p class="hint" style="margin:0">لا توجد طلبات بعد.</p>';
+}
+function sheetCheckout(planId){
+  const pl=planOf(planId);if(!pl||!cloud.session)return;
+  const rate=+setting('lyd_rate',0),mk=+setting('card_markup',0.2),bank=String(setting('bank_info','')||''),cardInfo=String(setting('card_info','')||'');
+  openSheet('اشتراك '+pl.name,`<form id="coF" class="sheet-b" novalidate>
+    <div class="field"><span class="lbl">المدة</span><div class="seg">${[1,3,6,12].map((m,i)=>`<label><input type="radio" name="co-m" id="co-m${m}" value="${m}" ${i===0?'checked':''}><span>${m===1?'شهر':m===12?'سنة':m+' أشهر'}</span></label>`).join('')}</div></div>
+    <div class="field"><span class="lbl">طريقة الدفع</span><div class="seg">${Object.entries(METHODS).map(([k,n],i)=>`<label><input type="radio" name="co-pm" id="co-pm-${k}" value="${k}" ${i===0?'checked':''}><span>${n}</span></label>`).join('')}<label><input type="radio" name="co-pm" value="card" disabled><span style="opacity:.5">بطاقة مصرفية (قريباً)</span></label></div></div>
+    <div class="result info" id="coAmt"></div>
+    <div id="coTransfer" class="sheet-b">
+      <div class="paper" style="white-space:pre-line">${bank?esc(bank):'سيضيف المدير بيانات الحساب المصرفي قريباً.'}</div>
+      ${bank?`<button class="btn sm ghost" type="button" data-act="copy" data-txt="${esc(bank)}">انسخ بيانات الحساب</button>`:''}
+      <div class="field"><label for="co-ref">رقم العملية أو اسم المحوِّل</label><input id="co-ref" maxlength="200" autocomplete="off"></div>
+      <div class="field"><label for="co-file">صورة إيصال التحويل</label><input id="co-file" type="file" accept="image/*,application/pdf"></div>
+    </div>
+    <div id="coCards" class="sheet-b" hidden>
+      ${cardInfo?`<div class="paper" style="white-space:pre-line">${esc(cardInfo)}</div>`:''}
+      <div class="field"><label for="co-cards">أرقام الكروت (رقم كل كرت في سطر)</label><textarea id="co-cards" dir="ltr" rows="4" maxlength="2000" placeholder="1234567890123"></textarea></div>
+      <p class="hint" style="margin:0">اشترِ كروتاً بقيمة المبلغ المطلوب أو أكثر. لا تشارك أرقام الكروت مع أي شخص آخر.</p>
+    </div>
+    <div class="field"><label for="co-note">ملاحظة (اختياري)</label><input id="co-note" maxlength="500"></div>
+    <p class="err" id="coErr"></p>
+    <button class="btn block" type="submit" id="coGo">أرسل الطلب</button>
+    <p class="hint" style="margin:0">يُراجَع طلبك يدوياً ويُفعَّل اشتراكك فور قبوله، وستجد حالته في «طلباتي».</p>
+  </form><div id="coOut"></div>`,b=>{
+    const f=$('#coF',b),amt=$('#coAmt',b),err=$('#coErr',b),go=$('#coGo',b);
+    const val=n=>($(`input[name="${n}"]:checked`,f)||{}).value;
+    function upd(){const m=+val('co-m'),pm=val('co-pm'),u=pl.price_usd*m,card=pm!=='transfer';
+      $('#coTransfer',b).hidden=card;$('#coCards',b).hidden=!card;
+      amt.innerHTML=`<div class="between"><span>المبلغ</span><b class="num" style="font-size:20px;white-space:nowrap">${usd(u)}</b></div>${rate?`<div class="between"><span>بالدينار الليبي${card?' (يشمل زيادة '+Math.round(mk*100)+'% للكروت)':''}</span><b style="font-size:20px">${lyd(u*rate*(card?1+mk:1))}</b></div>`:'<p class="small" style="margin:0">يُحدَّد المبلغ بالدينار عند المراجعة.</p>'}`}
+    f.addEventListener('change',upd);upd();
+    f.onsubmit=async e=>{e.preventDefault();err.textContent='';
+      const pm=val('co-pm'),months=+val('co-m'),ref=$('#co-ref',b).value.trim(),file=$('#co-file',b).files[0],cards=$('#co-cards',b).value.trim(),note=$('#co-note',b).value.trim();
+      if(pm==='transfer'&&!file&&!ref)return err.textContent='أرفق صورة الإيصال أو اكتب رقم العملية.';
+      if(pm!=='transfer'&&!/\d{6,}/.test(cards))return err.textContent='أدخل رقم كرت واحد على الأقل.';
+      if(file&&file.size>5*1024*1024)return err.textContent='حجم الإيصال أكبر من 5 ميغابايت.';
+      go.disabled=true;go.textContent='جارٍ الإرسال…';
+      let path=null;
+      if(file){const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'jpg';path=cloud.session.user.id+'/'+Date.now()+'.'+ext;
+        const up=await cloud.sb.storage.from('receipts').upload(path,file,{contentType:file.type||undefined,upsert:false});
+        if(up.error){go.disabled=false;go.textContent='أرسل الطلب';err.textContent='تعذّر رفع الإيصال. جرّب صورة أصغر.';return}}
+      const {error}=await cloud.sb.from('payments').insert({plan:pl.id,months,method:pm,reference:ref||null,cards:pm==='transfer'?null:cards,receipt_path:path,note:note||null});
+      go.disabled=false;go.textContent='أرسل الطلب';
+      if(error){err.textContent=/too_many_pending/.test(error.message)?'لديك 3 طلبات قيد المراجعة. انتظر حتى نراجعها.':'تعذّر إرسال الطلب: '+error.message;return}
+      f.hidden=true;$('#coOut',b).innerHTML=`<div class="result ok"><div class="r-top"><span class="chip ok">${ic('check')}استلمنا طلبك</span></div><p>سنراجع الدفع ونفعّل اشتراك ${esc(pl.name)} في أقرب وقت. تابع حالة الطلب من «طلباتي».</p></div><button class="btn block" type="button" data-act="plans">طلباتي</button>`;
+    };
+  });
+}
+
+/* admin panel */
+function sheetAdmin(tab='pay'){
+  if(!(cloud.status&&cloud.status.is_admin))return;
+  const T=[['pay','الطلبات'],['set','الإعدادات'],['lib','الموسوعة'],['grant','منح اشتراك']];
+  openSheet('لوحة التحكم',`<div class="seg" id="adTabs">${T.map(([k,n])=>`<label><input type="radio" name="ad-t" value="${k}" ${k===tab?'checked':''}><span>${n}</span></label>`).join('')}</div><div id="adBody" class="sheet-b"></div>`,b=>{
+    let live=true;const body=$('#adBody',b);
+    const show=k=>({pay:adPays,set:adSettings,lib:adLibrary,grant:adGrant})[k](body,()=>live);
+    $('#adTabs',b).onchange=e=>show(e.target.value);show(tab);
+    return()=>{live=false};
+  });
+}
+async function adPays(body,live,filter='pending'){
+  body.innerHTML=`<div class="seg">${[['pending','قيد المراجعة'],['approved','المقبولة'],['rejected','المرفوضة']].map(([k,n])=>`<label><input type="radio" name="ad-pf" value="${k}" ${k===filter?'checked':''}><span>${n}</span></label>`).join('')}</div><div id="adList"><p class="hint">جارٍ التحميل…</p></div>`;
+  $('.seg',body).onchange=e=>adPays(body,live,e.target.value);
+  const {data,error}=await cloud.sb.from('payments').select('*').eq('status',filter).order('created_at',{ascending:filter==='pending'}).limit(50);
+  const list=$('#adList',body);if(!list||!live())return;
+  if(error){list.innerHTML=`<p class="err">${esc(error.message)}</p>`;return}
+  if(!data.length){list.innerHTML='<p class="hint">لا توجد طلبات هنا.</p>';return}
+  list.innerHTML=data.map(x=>`<div class="paper" style="display:grid;gap:6px" data-pid="${x.id}">
+    <div class="between"><b>${esc((planOf(x.plan)||{}).name||x.plan)} · ${x.months} ${x.months>2?'أشهر':'شهر'}</b><span class="chip ${PSTAT[x.status][0]}">${PSTAT[x.status][1]}</span></div>
+    <div class="small" dir="ltr" style="text-align:right">${esc(x.email||'')}</div>
+    <div class="small">${METHODS[x.method]||x.method} · <bdi>${usd(x.amount_usd)}</bdi>${x.amount_lyd?' · <b>'+lyd(x.amount_lyd)+'</b>':''} · ${fDT.format(new Date(x.created_at))}</div>
+    ${x.reference?`<div class="small">المرجع: ${esc(x.reference)}</div>`:''}${x.cards?`<pre class="small" dir="ltr" style="margin:0;white-space:pre-wrap;font-family:var(--f-num);user-select:all">${esc(x.cards)}</pre>`:''}${x.note?`<div class="small">ملاحظة: ${esc(x.note)}</div>`:''}${x.admin_note?`<div class="small">ملاحظتك: ${esc(x.admin_note)}</div>`:''}
+    <div class="row">${x.receipt_path?`<button class="btn sm ghost" type="button" data-rc="${esc(x.receipt_path)}">عرض الإيصال</button>`:''}${x.status==='pending'?`<button class="btn sm" type="button" data-ok="${x.id}">${ic('check')}قبول وتفعيل</button><input placeholder="سبب الرفض (اختياري)" data-note="${x.id}" style="flex:1;min-width:140px;padding:6px 10px"><button class="btn sm ghost" type="button" data-no="${x.id}" style="color:var(--bad)">رفض</button>`:''}</div></div>`).join('');
+  list.onclick=async e=>{const t=e.target.closest('button');if(!t)return;
+    if(t.dataset.rc){t.disabled=true;const {data:u}=await cloud.sb.storage.from('receipts').createSignedUrl(t.dataset.rc,600);t.disabled=false;
+      if(u&&u.signedUrl){const a=document.createElement('a');a.href=u.signedUrl;a.target='_blank';a.rel='noopener';a.textContent='افتح الإيصال';a.className='btn sm';t.replaceWith(a)}else toast('تعذّر فتح الإيصال');return}
+    if(t.dataset.ok){t.disabled=true;const {error}=await cloud.sb.rpc('approve_payment',{p_id:t.dataset.ok});if(error){toast('تعذّر: '+error.message);t.disabled=false;return}toast('فُعّل الاشتراك');adPays(body,live,filter)}
+    if(t.dataset.no){t.disabled=true;const note=($(`[data-note="${t.dataset.no}"]`,list)||{}).value||null;const {error}=await cloud.sb.rpc('reject_payment',{p_id:t.dataset.no,p_note:note});if(error){toast('تعذّر: '+error.message);t.disabled=false;return}toast('رُفض الطلب');adPays(body,live,filter)}};
+}
+async function adSettings(body){
+  await loadPublic();
+  body.innerHTML=`<form id="asF" class="sheet-b">
+    <div class="form"><div class="field"><label for="as-rate">سعر الدولار بالدينار الليبي</label><input id="as-rate" inputmode="decimal" dir="ltr" value="${esc(setting('lyd_rate',0)||'')}" placeholder="مثال: 7.5"></div>
+    <div class="field"><label for="as-mk">زيادة الكروت (%)</label><input id="as-mk" inputmode="numeric" dir="ltr" value="${Math.round(+setting('card_markup',0.2)*100)}"></div>
+    <div class="field"><label for="as-sup">رقم الدعم (واتساب أو هاتف)</label><input id="as-sup" dir="ltr" value="${esc(setting('support',''))}"></div></div>
+    <div class="field"><label for="as-bank">بيانات الحساب المصرفي (تظهر لمن يدفع بالحوالة)</label><textarea id="as-bank" rows="4" placeholder="اسم المصرف&#10;اسم صاحب الحساب&#10;رقم الحساب">${esc(setting('bank_info',''))}</textarea></div>
+    <div class="field"><label for="as-card">تعليمات الدفع بالكروت (اختياري)</label><textarea id="as-card" rows="3" placeholder="مثال: نقبل كروت ليبيانا والمدار من فئة 10 و20 ديناراً">${esc(setting('card_info',''))}</textarea></div>
+    <p class="err" id="asErr"></p><button class="btn block" type="submit">احفظ الإعدادات</button></form>`;
+  $('#asF',body).onsubmit=async e=>{e.preventDefault();const rate=parseFloat($('#as-rate',body).value.replace(',','.'))||0,mk=(parseFloat($('#as-mk',body).value)||0)/100;
+    const rows=[{key:'lyd_rate',value:rate},{key:'card_markup',value:mk},{key:'support',value:$('#as-sup',body).value.trim()},{key:'bank_info',value:$('#as-bank',body).value.trim()},{key:'card_info',value:$('#as-card',body).value.trim()}];
+    const {error}=await cloud.sb.from('settings').upsert(rows);if(error){$('#asErr',body).textContent=error.message;return}await loadPublic();toast('حُفظت الإعدادات')};
+}
+async function adLibrary(body,live){
+  const all=[...new Set(SYSTEMS.flatMap(x=>x[1]))];
+  body.innerHTML='<p class="hint">جارٍ التحميل…</p>';
+  const {data,error}=await cloud.sb.from('articles').select('topic,reviewed');if(!live())return;
+  if(error){body.innerHTML=`<p class="err">${esc(error.message)}</p>`;return}
+  const have=new Set(data.map(r=>r.topic)),missing=all.filter(t=>!have.has(t));
+  body.innerHTML=`<div class="kv"><div><span>مقالات جاهزة في المكتبة</span><b>${data.length}</b></div><div><span>مواضيع الأقسام غير المكتوبة</span><b>${missing.length} من ${all.length}</b></div><div><span>راجعها طبيب</span><b>${data.filter(r=>r.reviewed).length}</b></div></div>
+   <p class="hint">المستخدم المجاني يقرأ المقالات الجاهزة فقط، لذلك اكتب مقالات الأقسام مسبقاً. تُكتب كل مقالة مرة واحدة بأقوى نموذج، وتكلّف تقريباً 0.07 دولار (المجموع ≈ ${usd(missing.length*0.07)}).</p>
+   ${missing.length?`<button class="btn block" type="button" id="alGo">اكتب المقالات الناقصة (${missing.length})</button>`:'<div class="result ok"><p>كل مواضيع الأقسام مكتوبة.</p></div>'}
+   <div class="prog" hidden id="alPr"><i></i></div><p class="status" id="alSt"></p>`;
+  const g=$('#alGo',body);if(!g)return;let stop=false;
+  g.onclick=async()=>{if(g.dataset.run){stop=true;g.textContent='يتوقف بعد المقالة الحالية…';return}g.dataset.run=1;g.textContent='إيقاف';$('#alPr',body).hidden=false;let done=0,fail=0;
+    for(const t of missing){if(stop||!live())break;$('#alSt',body).textContent='يكتب: '+t+' ('+(done+1)+' من '+missing.length+')';
+      try{const r=await aiArticle(t,{});const a=cleanArt(r.article);if(a)artPut(t,a)}catch(e){fail++}done++;$('#alPr i',body).style.width=(done/missing.length*100)+'%'}
+    if(live()){$('#alSt',body).textContent=`انتهى: ${done-fail} مقالة جديدة${fail?' · تعذّرت '+fail:''}.`;setTimeout(()=>live()&&adLibrary(body,live),1500)}};
+}
+function adGrant(body){
+  body.innerHTML=`<form id="agF" class="sheet-b"><p class="hint" style="margin:0">امنح اشتراكاً يدوياً (هدية أو تجربة أو دفع خارج التطبيق).</p>
+    <div class="field"><label for="ag-email">بريد المستخدم</label><input id="ag-email" type="email" dir="ltr" required></div>
+    <div class="form"><div class="field"><label for="ag-plan">الخطة</label><select id="ag-plan">${cloud.plans.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('')}</select></div>
+    <div class="field"><label for="ag-m">عدد الأشهر</label><select id="ag-m">${[1,3,6,12].map(m=>`<option>${m}</option>`).join('')}</select></div></div>
+    <p class="err" id="agErr"></p><button class="btn block" type="submit">امنح الاشتراك</button></form>`;
+  $('#agF',body).onsubmit=async e=>{e.preventDefault();const {error}=await cloud.sb.rpc('grant_plan',{p_email:$('#ag-email',body).value,p_plan:$('#ag-plan',body).value,p_months:+$('#ag-m',body).value});
+    if(error){$('#agErr',body).textContent=/user_not_found/.test(error.message)?'لا يوجد مستخدم بهذا البريد. يجب أن ينشئ حساباً أولاً.':error.message;return}toast('تم منح الاشتراك')};
+}
+
 /* ---------- actions ---------- */
 const OPEN_TEST={heart:['قياس النبض بالكاميرا',testHeart],breath:['معدل التنفس',testBreath],tremor:['ثبات اليد',testTremor],react:['سرعة رد الفعل',testReact],acuity:['حدة البصر',testAcuity],color:['تمييز الألوان',testColor],amsler:['شبكة أمسلر',b=>testGrid(b,'amsler')],astig:['اللابؤرية',b=>testGrid(b,'astig')],hear:['فحص السمع',testHear]};
 const ACT={
@@ -1544,6 +1821,7 @@ const ACT={
   sym:a=>sheetSym(a.dataset.id),sys:a=>sheetSys(a.dataset.i),enc:a=>sheetArticle(a.dataset.topic),q:a=>sheetQ(a.dataset.q),chat:()=>sheetChat(),sos:()=>sheetSOS(),report:()=>sheetReport(),calib:()=>sheetCalib(),
   logk:a=>{logK=a.dataset.k;if(view==='log')render();else go('log')},
   copy:a=>copyText(a.dataset.txt),
+  account:a=>sheetAccount(a.dataset.mode||'in'),plans:()=>sheetPlans(),checkout:a=>sheetCheckout(a.dataset.plan),admin:()=>sheetAdmin(),logout:()=>logout(),
   water:a=>{ensureReal();const k=dayKey(),before=S.water[k]||0;S.water[k]=Math.max(0,before+(+a.dataset.ml));persist();render();if(before<waterGoal()&&S.water[k]>=waterGoal())toast('أحسنت! وصلت إلى هدف الماء اليوم')},
   dose:a=>{ensureReal();const k=dayKey(),key=a.dataset.key;S.medLog[k]=S.medLog[k]||{};if(S.medLog[k][key])delete S.medLog[k][key];else S.medLog[k][key]=Date.now();persist();render()},
   del:a=>{if(!a.classList.contains('confirm')){$$('.x.confirm').forEach(x=>{x.classList.remove('confirm');x.innerHTML=ic('trash')});a.classList.add('confirm');a.textContent='تأكيد الحذف';return}
@@ -1595,6 +1873,7 @@ setInterval(()=>{
 view=VIEWS[location.hash.slice(1)]?location.hash.slice(1):'home';
 render();
 connectRemote();
+cloudInit();
 if(IN_VIEWER){claude.use('sample').then(async s=>{if(!s)return;aiSample=s;try{const l=await s.limits();const t=l&&l.modelTiers;aiTier=(!t||t.includes('complex'))?'complex':'default'}catch(e){}if($('#sheetBg').hidden)render()}).catch(()=>{})}
 if(!IN_VIEWER&&'serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 })();
