@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# إعداد Supabase تلقائياً لتطبيق «عيادة الجيب».
+# إعداد Supabase تلقائياً لتطبيق «أفينا».
 # المتغيرات المطلوبة (تُضاف في إعدادات البيئة، ولا تُكتب في الكود).
 # الرمز يحتاج صلاحيات كتابة: database_write وauth_config_write وedge_functions_write وsecrets_write.
 #   SUPABASE_ACCESS_TOKEN  رمز الوصول من supabase.com/dashboard/account/tokens
@@ -31,11 +31,13 @@ echo "1/5 قاعدة البيانات…"
 sql < supabase/schema.sql
 
 echo "2/5 إعدادات تسجيل الدخول…"
-auth=$(mktemp); printf '{"site_url":"%s","uri_allow_list":"%s"}' "$SITE" "$SITE" > "$auth"
+# روابط التأكيد واستعادة كلمة المرور تفتح الموقع (ومنه تعود إلى التطبيق)
+auth=$(mktemp); printf '{"site_url":"%s","uri_allow_list":"%s,%sprivacy.html"}' "$SITE" "$SITE" "$SITE" > "$auth"
 api PATCH /config/auth "$auth"; rm -f "$auth"
 
-echo "3/5 خادم الذكاء الاصطناعي…"
+echo "3/5 الدوال: الذكاء الاصطناعي (ai) والدفع التلقائي (pay)…"
 "${CLI[@]}" functions deploy ai --project-ref "$REF" --no-verify-jwt --use-api
+"${CLI[@]}" functions deploy pay --project-ref "$REF" --no-verify-jwt --use-api
 
 if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
   echo "4/5 مفتاح Claude…"

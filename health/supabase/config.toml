@@ -1,6 +1,10 @@
-# إعدادات Supabase CLI لعيادة الجيب
-project_id = "pocket-clinic"
+# إعدادات Supabase CLI لأفينا
+project_id = "avina"
 
 [functions.ai]
 # الدالة تتحقق من المستخدم بنفسها
+verify_jwt = false
+
+[functions.pay]
+# إشعارات Stripe تحمل توقيعاً يتحقق منه الكود
 verify_jwt = false

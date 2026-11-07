@@ -1,0 +1,23 @@
+{
+  "appId": "app.avina.health",
+  "appName": "Avina",
+  "webDir": "www",
+  "backgroundColor": "#f4f6fc",
+  "android": {
+    "allowMixedContent": false
+  },
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#f4f6fc"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_avina",
+      "iconColor": "#1f3c88"
+    },
+    "SystemBars": {
+      "insetsHandling": "css",
+      "initialViewportFitValueHint": "cover"
+    }
+  }
+}

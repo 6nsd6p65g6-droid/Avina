@@ -1,0 +1,36 @@
+# بناء نسخة iPhone ورفعها إلى TestFlight بدون جهاز Mac، عبر Codemagic (codemagic.io).
+# Codemagic يقرأ هذا الملف من جذر المستودع: انسخه إلى codemagic.yaml في الجذر عند الربط.
+# قبل التشغيل: في Codemagic ← Teams ← Integrations أضف مفتاح App Store Connect API باسم "Avina ASC".
+workflows:
+  avina-ios:
+    name: Avina iOS → TestFlight
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: Avina ASC
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: app.avina.health
+      node: 22
+      xcode: latest
+    scripts:
+      - name: Install
+        script: cd health/mobile && npm ci
+      - name: Copy the web app (App Store channel) and sync
+        script: cd health/mobile && npm run sync:ios
+      - name: Signing profiles
+        script: xcode-project use-profiles
+      - name: Build number
+        script: |
+          cd health/mobile/ios/App
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" || echo 0)
+          agvtool new-version -all $((LATEST + 1))
+      - name: Build IPA
+        script: xcode-project build-ipa --project "health/mobile/ios/App/App.xcodeproj" --scheme "App"
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

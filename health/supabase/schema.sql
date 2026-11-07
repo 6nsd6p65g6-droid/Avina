@@ -1,5 +1,5 @@
 -- ============================================================
--- عيادة الجيب — قاعدة البيانات
+-- أفينا — قاعدة البيانات
 -- انسخ هذا الملف كاملاً والصقه في: Supabase ← SQL Editor ← Run
 -- يمكن تشغيله أكثر من مرة دون أن يفسد شيئاً.
 -- ============================================================
@@ -100,7 +100,9 @@ insert into public.settings (key, value) values
  ('card_markup', '0.2'),   -- زيادة كروت ليبيانا والمدار (0.2 = 20%)
  ('bank_info', '""'),      -- بيانات الحساب المصرفي للحوالات
  ('card_info', '""'),      -- تعليمات الدفع بالكروت
- ('support', '""')         -- رقم واتساب أو هاتف للدعم
+ ('support', '""'),        -- رقم واتساب أو هاتف للدعم
+ ('paypal_link', '""'),    -- رابط PayPal (مثال: https://paypal.me/avina/{amount}USD)
+ ('card_links', '{}')      -- روابط الدفع بالبطاقة لكل خطة ومدة، مثل {"pro:1":"https://buy.stripe.com/...?client_reference_id={ref}"}
 on conflict (key) do nothing;
 
 -- ---------- الاشتراكات ----------
@@ -122,7 +124,7 @@ create table if not exists public.payments (
   email text,
   plan text not null references public.plans(id),
   months int not null check (months in (1,3,6,12)),
-  method text not null check (method in ('transfer','libyana','madar')),
+  method text not null check (method in ('transfer','libyana','madar','card','paypal')),
   amount_usd numeric(10,2),
   amount_lyd numeric(12,2),
   reference text check (char_length(reference) <= 200),
@@ -135,6 +137,11 @@ create table if not exists public.payments (
   reviewed_at timestamptz,
   reviewed_by uuid
 );
+-- للقواعد المنشأة بنسخة أقدم: الدولة وطرق الدفع العالمية
+alter table public.payments add column if not exists country text check (country ~ '^[A-Z]{2}$');
+alter table public.payments add column if not exists provider_ref text check (char_length(provider_ref) <= 200);
+alter table public.payments drop constraint if exists payments_method_check;
+alter table public.payments add constraint payments_method_check check (method in ('transfer','libyana','madar','card','paypal'));
 create index if not exists payments_status_idx on public.payments(status, created_at desc);
 alter table public.payments enable row level security;
 drop policy if exists "pay_insert" on public.payments;
@@ -155,10 +162,13 @@ begin
   if v_price is null or v_price <= 0 then raise exception 'invalid_plan'; end if;
   select coalesce((select (value #>> '{}')::numeric from public.settings where key = 'lyd_rate'), 0) into v_rate;
   select coalesce((select (value #>> '{}')::numeric from public.settings where key = 'card_markup'), 0.2) into v_markup;
+  -- الطرق الليبية لليبيا فقط، والبطاقات وPayPal بالدولار
+  if new.method in ('transfer','libyana','madar') and coalesce(new.country, 'LY') <> 'LY' then raise exception 'method_not_available'; end if;
   new.user_id := auth.uid();
+  new.provider_ref := null;
   new.email := (select email from public.profiles where id = auth.uid());
   new.amount_usd := round(v_price * new.months, 2);
-  new.amount_lyd := case when v_rate > 0 then
+  new.amount_lyd := case when v_rate > 0 and new.method in ('transfer','libyana','madar') then
       round(v_price * new.months * v_rate * (case when new.method in ('libyana','madar') then 1 + v_markup else 1 end), 2)
     else null end;
   new.status := 'pending'; new.admin_note := null; new.reviewed_at := null; new.reviewed_by := null; new.created_at := now();
@@ -168,12 +178,11 @@ drop trigger if exists payments_before_insert on public.payments;
 create trigger payments_before_insert before insert on public.payments
   for each row execute function public.payments_before_insert();
 
--- الموافقة على الدفع: تفعّل الاشتراك أو تمدّده
-create or replace function public.approve_payment(p_id uuid) returns void
+-- تفعيل الاشتراك أو تمديده (داخلية: يستدعيها المدير أو خادم الدفع فقط)
+create or replace function public.activate_payment(p_id uuid, p_by uuid default null, p_ref text default null) returns void
 language plpgsql security definer set search_path = public as $$
 declare p public.payments; s public.subscriptions; base timestamptz;
 begin
-  if not public.is_admin() then raise exception 'not_allowed'; end if;
   select * into p from public.payments where id = p_id for update;
   if not found or p.status <> 'pending' then raise exception 'not_pending'; end if;
   select * into s from public.subscriptions where user_id = p.user_id for update;
@@ -181,7 +190,18 @@ begin
   insert into public.subscriptions(user_id, plan, expires_at, updated_at)
     values (p.user_id, p.plan, base + make_interval(months => p.months), now())
     on conflict (user_id) do update set plan = excluded.plan, expires_at = excluded.expires_at, updated_at = now();
-  update public.payments set status = 'approved', reviewed_at = now(), reviewed_by = auth.uid() where id = p_id;
+  update public.payments set status = 'approved', reviewed_at = now(), reviewed_by = p_by,
+    provider_ref = coalesce(left(p_ref, 200), provider_ref) where id = p_id;
+end $$;
+revoke all on function public.activate_payment(uuid, uuid, text) from public, anon, authenticated;
+grant execute on function public.activate_payment(uuid, uuid, text) to service_role;
+
+-- الموافقة اليدوية من المدير
+create or replace function public.approve_payment(p_id uuid) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_admin() then raise exception 'not_allowed'; end if;
+  perform public.activate_payment(p_id, auth.uid(), null);
 end $$;
 
 create or replace function public.reject_payment(p_id uuid, p_note text default null) returns void

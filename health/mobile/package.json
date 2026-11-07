@@ -1,0 +1,25 @@
+{
+  "name": "avina-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Avina native apps (Android + iOS) built with Capacitor from the web app in ../",
+  "scripts": {
+    "web:direct": "AVINA_CHANNEL=direct node scripts/copy-web.mjs",
+    "web:play": "AVINA_CHANNEL=play node scripts/copy-web.mjs",
+    "web:appstore": "AVINA_CHANNEL=appstore node scripts/copy-web.mjs",
+    "sync:android:play": "npm run web:play && cap sync android",
+    "sync:android:direct": "npm run web:direct && cap sync android",
+    "sync:ios": "npm run web:appstore && cap sync ios",
+    "assets": "capacitor-assets generate --iconBackgroundColor '#1f3c88' --iconBackgroundColorDark '#1f3c88' --splashBackgroundColor '#f4f6fc' --splashBackgroundColorDark '#0c1226'"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.6.0",
+    "@capacitor/core": "8.6.0",
+    "@capacitor/ios": "8.6.0",
+    "@capacitor/local-notifications": "8.3.1"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "4.0.0",
+    "@capacitor/cli": "8.6.0"
+  }
+}

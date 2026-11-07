@@ -1,4 +1,4 @@
-// عيادة الجيب — خادم الذكاء الاصطناعي (Supabase Edge Function باسم "ai")
+// أفينا — خادم الذكاء الاصطناعي (Supabase Edge Function باسم "ai")
 // المفتاح السري ANTHROPIC_API_KEY يوضع في: Edge Functions ← Secrets، ولا يوضع في التطبيق أبداً.
 import Anthropic from "npm:@anthropic-ai/sdk@1.3.0";
 import { createClient } from "npm:@supabase/supabase-js@2.117.3";
@@ -46,7 +46,7 @@ const refund = (userId: string, isAdmin: boolean) => (isAdmin ? Promise.resolve(
 
 // ---------- التعليمات ----------
 function chatRules(emNum: string, context: string) {
-  return `أنت «طبيب الجيب»، مساعد طبي داخل تطبيق «عيادة الجيب». تحدّث بعربية فصحى بسيطة ودافئة.
+  return `أنت «طبيب أفينا»، مساعد طبي داخل تطبيق «أفينا». تحدّث بعربية فصحى بسيطة ودافئة.
 تجيب عن أي سؤال يخص جسم الإنسان والأمراض والأعراض والتحاليل والأدوية (معلومات عامة) والتغذية والنوم واللياقة والصحة النفسية. إذا كان السؤال خارج الصحة وجسم الإنسان فاعتذر بلطف ووجّه المستخدم لسؤال صحي.
 
 قواعد الدقة (إلزامية):
@@ -199,6 +199,23 @@ Deno.serve(async (req: Request) => {
   let body: Record<string, unknown>;
   try { body = await req.json(); } catch { return json({ error: "bad_request" }, 400); }
   const purpose = body.purpose;
+
+  // ----- حذف الحساب نهائياً (مطلوب في متجري Apple وGoogle) -----
+  if (purpose === "delete_account") {
+    if (body.confirm !== "DELETE") return json({ error: "bad_request" }, 400);
+    const folder = user.id;
+    for (;;) {
+      const { data: files, error } = await db.storage.from("receipts").list(folder, { limit: 100 });
+      if (error || !files?.length) break;
+      const { error: rmErr } = await db.storage.from("receipts").remove(files.map((f) => `${folder}/${f.name}`));
+      if (rmErr) return json({ error: "server" }, 500);
+      if (files.length < 100) break;
+    }
+    const { error: delErr } = await db.auth.admin.deleteUser(user.id);
+    if (delErr) return json({ error: "server" }, 500);
+    return json({ deleted: true });
+  }
+
   const en = body.lang === "en";
   const EN_NOTE = en ? "IMPORTANT: The user reads English. Write everything in clear, simple English.\n\n" : "";
   const { plan, isAdmin } = await loadPlan(user.id);
@@ -252,7 +269,7 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  // ----- المحادثة مع طبيب الجيب -----
+  // ----- المحادثة مع طبيب أفينا -----
   if (purpose === "chat") {
     const raw = Array.isArray(body.turns) ? body.turns.slice(-20) : [];
     const turns: Turn[] = raw

@@ -2,28 +2,50 @@
 
 ## المستودع
 - الجذر: تطبيق إدارة المبيعات والمخزون (لا تعدّله إلا بطلب صريح).
-- `health/`: تطبيق «عيادة الجيب» الصحي (PWA عربي)، منشور على GitHub Pages:
+- `health/`: تطبيق **«أفينا · Avina»** الصحي (كان اسمه «عيادة الجيب»). PWA بالعربية والإنجليزية، منشور على GitHub Pages:
   https://reshy0643-pixel.github.io/store/health/
-- خادم التطبيق على Supabase (مشروع `ifpduyrdexsbpyvcjjxz`): الملفات في `health/supabase/`
-  (`schema.sql` و`functions/ai/index.ts` و`deploy.sh` ودليل عربي في `README.md`).
+  - `index.html`: التطبيق كاملاً.
+  - `privacy.html` و`terms.html`: سياسة الخصوصية وشروط الاستخدام (عربي وإنجليزي)، يطلبهما المتجران.
+  - `supabase/`: خادم التطبيق على Supabase (مشروع `ifpduyrdexsbpyvcjjxz`)، وفيه:
+    - `schema.sql`.
+    - الدالة `functions/ai` (الذكاء الاصطناعي وحذف الحساب).
+    - الدالة `functions/pay` (تفعيل تلقائي بعد الدفع عبر Stripe).
+    - `deploy.sh` ودليل عربي في `README.md`.
+  - `mobile/`: غلاف Capacitor 8 لأندرويد وiPhone (المعرّف `app.avina.health`). البناء عبر `scripts/build-android.sh`، والتفاصيل في `mobile/README.md`.
+  - `store/`: مواد المتجرين، وفيه:
+    - `listing.md`: النصوص وإجابات الخصوصية.
+    - `GUIDE.md`: دليل النشر للمستخدم.
+    - `graphics/` و`screenshots/`.
+- الهوية: لازوردي `#1f3c88` وفيروزي `#178f8d` وذهبي `#c8962c` على `#f4f6fc`. الشعار نجمة ثمانية فيها خط نبض. الخطوط Figtree وIBM Plex Sans Arabic، وMarcellus وAmiri للاسم فقط. سكربت الأيقونات في سجل الجلسة (Playwright يرسم SVG).
+
+## قواعد في الكود
+- **عند إضافة أي نص عربي جديد** للواجهة أضف ترجمته إلى `I18N` في `index.html`. اختبار `e2e-en` يكشف أي نص عربي متبقٍّ.
+- **قنوات التوزيع:** `window.AVINA_CHANNEL` = `web` أو `direct` أو `play` أو `appstore`.
+  - في `play` و`appstore` يكون `CAN_BUY=false`: لا أسعار ولا دفع ولا روابط ترقية داخل التطبيق، تماشياً مع قواعد Apple وGoogle.
+  - لا تضف أي دعوة للشراء تتجاوز `CAN_BUY`.
+- **الدفع حسب البلد:**
+  - ليبيا: `transfer` و`libyana` و`madar`، بالدينار، مع زيادة 20% للكروت.
+  - غير ليبيا: `card` و`paypal`، بالدولار عبر روابط يضعها المدير في الإعدادات (`card_links` و`paypal_link`).
+  - الخادم يرفض الطرق الليبية لغير ليبيا.
+- مفاتيح التخزين المحلي بقيت `pocket-clinic:*` و`pc-lang` حتى لا تضيع بيانات المستخدمين الحاليين.
 
 ## عندما يقول المستخدم «بيئة»
 يقصد إكمال إعداد **بيئة Claude السحابية «Reshy»** لتشغيل خادم التطبيق على Supabase.
 
-**ما تمّ (7 نوفمبر 2026):**
-- أُضيفت النطاقات `api.supabase.com` و`ifpduyrdexsbpyvcjjxz.supabase.co` و`reshy0643-pixel.github.io` إلى البيئة.
-- تأكدنا: التطبيق منشور، والمفتاح العام صحيح، وتسجيل الدخول بالبريد مفعّل.
-- لم تُنشأ قاعدة البيانات ولم تُنشر الدالة `ai` بعد.
+**ما تمّ:**
+- 7 نوفمبر 2026: أُضيفت النطاقات `api.supabase.com` و`ifpduyrdexsbpyvcjjxz.supabase.co` و`reshy0643-pixel.github.io` إلى البيئة.
+- 7 نوفمبر 2026: أُضيف `dl.google.com` لتنزيل أدوات أندرويد.
+- تأكدنا أن المفتاح العام صحيح، وأن تسجيل الدخول بالبريد مفعّل.
+- لم تُنشأ قاعدة البيانات، ولم تُنشر الدالتان `ai` و`pay` بعد.
 
 **الخطوات الباقية:**
-1. رمز Supabase: استدعِ `request_credential` للمضيف `api.supabase.com` (نوع bearer).
-   - نموذج إدخال الرمز لا يظهر في تطبيق الهاتف (يظهر فقط «سماح/رفض»).
-   - على المستخدم فتح الجلسة من claude.ai/code في المتصفح.
+1. رمز Supabase بصلاحيات كتابة كاملة (database وauth وedge functions وsecrets وproject). الرمز المحفوظ حالياً للمضيف `api.supabase.com` للقراءة فقط.
+   - استدعِ `request_credential` للمضيف `api.supabase.com` (نوع bearer).
+   - نموذج إدخال الرمز لا يظهر في تطبيق الهاتف (يظهر فقط «سماح/رفض»). على المستخدم فتح الجلسة من claude.ai/code في المتصفح.
    - أو إضافة الرمز في إعدادات البيئة ← **Network secrets** للمضيف `api.supabase.com`.
-2. بعد حفظ الرمز شغّل الإعداد برمز وهمي (الوكيل يستبدله بالحقيقي):
+2. بعد حفظ الرمز شغّل الإعداد برمز وهمي (الوكيل يستبدله بالحقيقي). الإعداد ينشر `ai` و`pay`:
    `SUPABASE_ACCESS_TOKEN="sbp_$(printf '0%.0s' {1..40})" ADMIN_EMAIL=reshy0643@gmail.com bash health/supabase/deploy.sh`
-3. مفتاح Claude يضعه المستخدم بنفسه في Supabase: **Edge Functions ← Secrets** باسم `ANTHROPIC_API_KEY`.
-   لا يمرّ عبر هذه الجلسة.
+3. مفتاح Claude يضعه المستخدم بنفسه في Supabase: **Edge Functions ← Secrets** باسم `ANTHROPIC_API_KEY`. لا يمرّ عبر هذه الجلسة.
 4. اختبر:
    - `rest/v1/plans` يجب أن يعيد الخطط الثلاث.
    - `functions/v1/ai` بلا تسجيل دخول يجب أن يعيد 401.
@@ -37,21 +59,32 @@
 
 1. **حساب GitHub معلَّق:**
    - المستودع وموقع Pages صارا 404، والمستخدم طلب إعادة التفعيل من GitHub.
-   - أُرسلت له نسخة احتياطية zip من المستودع.
-   - يوجد commit محلي غير مرفوع على الفرع `claude/health-env-notes` (تحسين `deploy.sh` وهذه الملاحظات). يُرفع عند عودة الحساب، فلا تعِد محاولة الرفع قبل ذلك.
+   - أُرسلت له نسخة احتياطية zip.
+   - commits محلية غير مرفوعة على الفرع `claude/health-env-notes`. تُرفع عبر طلب دمج إلى `main` عند عودة الحساب، فلا تعِد محاولة الرفع قبل ذلك. افحص أولاً بـ `git ls-remote origin`.
 2. **استضافة بديلة (Netlify):**
    - ننتظر أن ينشئ المستخدم حساباً ورمز وصول من app.netlify.com/user/applications، ثم يكتب «جاهز» من المتصفح.
-   - بعدها: `request_credential` للمضيف `api.netlify.com`، ثم أنشئ موقعاً وانشر المستودع كاملاً (تطبيق المبيعات في الجذر و«عيادة الجيب» في `/health/`) عبر Netlify API بملف zip.
-   - ثم حدّث `site_url` في إعدادات الدخول بـSupabase، وقيمة `SITE_URL` في `deploy.sh`، وروابط هذا الملف.
-3. **Supabase:**
-   - الرمز المحفوظ للمضيف `api.supabase.com` للقراءة فقط.
-   - يلزم رمز بصلاحيات كتابة كاملة (database وauth وedge functions وsecrets وproject)، ثم تشغيل `deploy.sh`، ثم يضع المستخدم `ANTHROPIC_API_KEY` في أسرار Supabase.
-4. **تمّت إضافة اللغة الإنجليزية** (7 نوفمبر):
-   - قاموس من حوالي 1230 عبارة داخل `health/index.html` (`I18N`)، ومترجم يعمل على صفحة التطبيق (`trText` و`trNode` مع MutationObserver).
-   - الاختيار محفوظ في `localStorage` بالمفتاح `pc-lang`.
-   - زر «EN/ع» في الرأس، وخيار «اللغة · Language» في «ملفي».
-   - الذكاء الاصطناعي يجيب بالإنجليزية، ودالة الخادم `ai` تدعم `lang`، ومقالات الموسوعة الإنجليزية تُحفظ بمفتاح `en:`.
-   - **عند إضافة أي نص عربي جديد** للواجهة أضف ترجمته إلى `I18N`. اختبار `e2e-en` يكشف أي نص عربي متبقٍّ.
+   - بعدها: `request_credential` للمضيف `api.netlify.com`، ثم أنشئ موقعاً وانشر المستودع كاملاً (تطبيق المبيعات في الجذر وأفينا في `/health/`) عبر Netlify API بملف zip.
+   - ثم حدّث:
+     - `site_url` في إعدادات الدخول بـSupabase.
+     - `SITE_URL` في `deploy.sh`.
+     - `PUBLIC_URL` في `health/index.html` (تستعمله تطبيقات الهاتف لروابط الخصوصية والتأكيد).
+     - روابط هذا الملف.
+3. **Supabase:** انظر «بيئة».
+4. **اللغة الإنجليزية:** تمّت (قاموس `I18N` ومترجم `trText`/`trNode`، والاختيار في `localStorage` بالمفتاح `pc-lang`).
+5. **الهوية الجديدة «أفينا» ونسخ المتاجر:** تمّت في 7 نوفمبر.
+   - **الملفات:**
+     - نسخ أندرويد في `health/mobile/dist/` (خارج Git).
+     - مفتاح توقيع الرفع `avina-upload.jks` وكلمة مروره أُرسلا للمستخدم كملفات، وليسا في المستودع.
+     - لبناء تحديث: اطلب منه رفع الملفين، ثم اكتب `health/mobile/android/keystore.properties`.
+   - **الباقي على المستخدم** (التفاصيل في `health/store/GUIDE.md`):
+     - رابط عام للموقع.
+     - تشغيل Supabase.
+     - حساب Google Play ‏(25$، وتجربة مغلقة 12 مختبِراً لمدة 14 يوماً).
+     - حساب Apple Developer ‏(99$/سنة).
+     - بناء iPhone عبر Mac أو Codemagic (`health/mobile/ci/codemagic.yaml` يُنسخ إلى الجذر عند الربط، بإذنه).
+     - حساب تجريبي للمراجعين.
+     - روابط الدفع بالبطاقة وPayPal.
+   - **قرار حدّ ألترا اليومي** (15 حالياً، واقترحنا 8) ما زال بانتظار المستخدم.
 
 ## أسلوب العمل
 - تحدّث مع المستخدم بالعربية فقط.
