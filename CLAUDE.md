@@ -8,19 +8,29 @@
   (`schema.sql` و`functions/ai/index.ts` و`deploy.sh` ودليل عربي في `README.md`).
 
 ## عندما يقول المستخدم «بيئة»
-يقصد إكمال إعداد **بيئة Claude السحابية «Reshy»** حتى يستطيع Claude تشغيل `health/supabase/deploy.sh`:
-1. يفتح إعدادات البيئة: من السهم بجانب عنوان الجلسة ← **Edit cloud environment**،
-   أو من claude.ai/code ← اختيار البيئة تحت مربع الكتابة ← أيقونة الترس بجانب «Reshy».
-2. **Network access** ← **Custom** ← **Allowed domains**:
-   `api.supabase.com` و`ifpduyrdexsbpyvcjjxz.supabase.co` و`reshy0643-pixel.github.io`،
-   مع تفعيل **Also include default list of common package managers**.
-3. **Environment variables**: `SUPABASE_ACCESS_TOKEN=sbp_...` و`ANTHROPIC_API_KEY=sk-ant-...`
-   (رمز Supabase جديد، فالرمز القديم ظهر في المحادثة ويجب حذفه).
-4. **Save changes**، ثم تُفتح جلسة جديدة (المتغيرات لا تُقرأ إلا في جلسة جديدة) وتشغّل:
-   `ADMIN_EMAIL=reshy0643@gmail.com bash health/supabase/deploy.sh`
-   ثم يُختبر الاتصال من التطبيق المنشور.
+يقصد إكمال إعداد **بيئة Claude السحابية «Reshy»** لتشغيل خادم التطبيق على Supabase.
+
+**ما تمّ (7 نوفمبر 2026):**
+- أُضيفت النطاقات `api.supabase.com` و`ifpduyrdexsbpyvcjjxz.supabase.co` و`reshy0643-pixel.github.io` إلى البيئة.
+- تأكدنا: التطبيق منشور، والمفتاح العام صحيح، وتسجيل الدخول بالبريد مفعّل.
+- لم تُنشأ قاعدة البيانات ولم تُنشر الدالة `ai` بعد.
+
+**الخطوات الباقية:**
+1. رمز Supabase: استدعِ `request_credential` للمضيف `api.supabase.com` (نوع bearer).
+   - نموذج إدخال الرمز لا يظهر في تطبيق الهاتف (يظهر فقط «سماح/رفض»).
+   - على المستخدم فتح الجلسة من claude.ai/code في المتصفح.
+   - أو إضافة الرمز في إعدادات البيئة ← **Network secrets** للمضيف `api.supabase.com`.
+2. بعد حفظ الرمز شغّل الإعداد برمز وهمي (الوكيل يستبدله بالحقيقي):
+   `SUPABASE_ACCESS_TOKEN="sbp_$(printf '0%.0s' {1..40})" ADMIN_EMAIL=reshy0643@gmail.com bash health/supabase/deploy.sh`
+3. مفتاح Claude يضعه المستخدم بنفسه في Supabase: **Edge Functions ← Secrets** باسم `ANTHROPIC_API_KEY`.
+   لا يمرّ عبر هذه الجلسة.
+4. اختبر:
+   - `rest/v1/plans` يجب أن يعيد الخطط الثلاث.
+   - `functions/v1/ai` بلا تسجيل دخول يجب أن يعيد 401.
+
 - لا تطلب من المستخدم لصق أي مفتاح سري في المحادثة.
-- بريد المدير المقصود على الأرجح `reshy0643@gmail.com` (كتبه المستخدم `gmail.con`)؛ تأكّد منه قبل التشغيل.
+- الرمز القديم الذي ظهر في المحادثة يجب أن يُحذف من حساب Supabase.
+- بريد المدير على الأرجح `reshy0643@gmail.com` (كتبه المستخدم `gmail.con`).
 
 ## أسلوب العمل
 - تحدّث مع المستخدم بالعربية فقط.
