@@ -199,22 +199,25 @@ Deno.serve(async (req: Request) => {
   let body: Record<string, unknown>;
   try { body = await req.json(); } catch { return json({ error: "bad_request" }, 400); }
   const purpose = body.purpose;
+  const en = body.lang === "en";
+  const EN_NOTE = en ? "IMPORTANT: The user reads English. Write everything in clear, simple English.\n\n" : "";
   const { plan, isAdmin } = await loadPlan(user.id);
 
   // ----- مقالة من الموسوعة -----
   if (purpose === "article") {
     const topic = clean(body.topic, 120);
     if (!topic) return json({ error: "bad_request" }, 400);
-    const { data: cached } = await db.from("articles").select("data, verify, reviewed").eq("topic", topic).maybeSingle();
+    const key = (en ? "en:" : "") + topic;
+    const { data: cached } = await db.from("articles").select("data, verify, reviewed").eq("topic", key).maybeSingle();
     if (cached) return json({ article: cached.data, verify: cached.verify, reviewed: cached.reviewed, cached: true });
     if (!plan.can_generate && !isAdmin) return json({ error: "upgrade", need: "pro" }, 402);
     const used = await consume(user.id, plan.daily_ai, isAdmin);
     if (used === null) return json({ error: "limit", limit: plan.daily_ai, plan: plan.id }, 429);
     return jsonWithKeepalive(async () => {
       try {
-        const article = await generateJSON("أنت مرجع طبي دقيق. أجب بالعربية.", articlePrompt(topic), ARTICLE_SCHEMA);
+        const article = await generateJSON(en ? "You are a precise medical reference. Answer in English." : "أنت مرجع طبي دقيق. أجب بالعربية.", EN_NOTE + articlePrompt(topic), ARTICLE_SCHEMA);
         if (article.kind !== "off_topic") {
-          await db.from("articles").upsert({ topic, data: article, model: LIBRARY_MODEL, updated_at: new Date().toISOString() });
+          await db.from("articles").upsert({ topic: key, data: article, model: LIBRARY_MODEL, updated_at: new Date().toISOString() });
         } else {
           await refund(user.id, isAdmin);
         }
@@ -229,7 +232,8 @@ Deno.serve(async (req: Request) => {
   // ----- المراجعة الثانية -----
   if (purpose === "verify") {
     const topic = clean(body.topic, 120);
-    const { data: row } = await db.from("articles").select("data, verify").eq("topic", topic).maybeSingle();
+    const key = (en ? "en:" : "") + topic;
+    const { data: row } = await db.from("articles").select("data, verify").eq("topic", key).maybeSingle();
     if (!row) return json({ error: "not_found" }, 404);
     if (row.verify) return json({ verify: row.verify, cached: true });
     if (!plan.can_verify && !isAdmin) return json({ error: "upgrade", need: "pro" }, 402);
@@ -238,8 +242,8 @@ Deno.serve(async (req: Request) => {
     return jsonWithKeepalive(async () => {
       try {
         const a = row.data as Record<string, unknown>;
-        const verify = await generateJSON("أنت طبيب مراجع دقيق. أجب بالعربية.", verifyPrompt(topic, { summary: a.summary, sections: a.sections, urgent: a.urgent }), VERIFY_SCHEMA);
-        await db.from("articles").update({ verify, updated_at: new Date().toISOString() }).eq("topic", topic);
+        const verify = await generateJSON(en ? "You are a precise medical reviewer. Answer in English." : "أنت طبيب مراجع دقيق. أجب بالعربية.", EN_NOTE + verifyPrompt(topic, { summary: a.summary, sections: a.sections, urgent: a.urgent }), VERIFY_SCHEMA);
+        await db.from("articles").update({ verify, updated_at: new Date().toISOString() }).eq("topic", key);
         return { verify, cached: false };
       } catch (e) {
         await refund(user.id, isAdmin);
@@ -262,7 +266,7 @@ Deno.serve(async (req: Request) => {
 
     const emNum = clean(body.emNum, 20) || "112";
     const context = typeof body.context === "string" ? body.context.slice(0, 4000) : "";
-    const stream = startStream(model, chatRules(emNum, context), turns, 8000, "medium");
+    const stream = startStream(model, EN_NOTE + chatRules(emNum, context), turns, 8000, "medium");
     const enc = new TextEncoder();
     let sent = false;
     const out = new ReadableStream<Uint8Array>({
@@ -277,12 +281,12 @@ Deno.serve(async (req: Request) => {
           const final = (await stream.finalMessage()) as unknown as FinalMsg;
           if (final.stop_reason === "refusal") {
             if (!sent) await refund(user.id, isAdmin);
-            controller.enqueue(enc.encode("\n\nتعذّر الرد على هذا السؤال. جرّب صياغته بطريقة أخرى، أو استشر طبيبك."));
+            controller.enqueue(enc.encode(en ? "\n\nThis question could not be answered. Try rephrasing it, or ask your doctor." : "\n\nتعذّر الرد على هذا السؤال. جرّب صياغته بطريقة أخرى، أو استشر طبيبك."));
           }
         } catch (e) {
           console.error(e);
           if (!sent) await refund(user.id, isAdmin);
-          controller.enqueue(enc.encode("\n\n[تعذّر إكمال الإجابة. حاول مرة أخرى.]"));
+          controller.enqueue(enc.encode(en ? "\n\n[The answer could not be completed. Please try again.]" : "\n\n[تعذّر إكمال الإجابة. حاول مرة أخرى.]"));
         } finally {
           controller.close();
         }
