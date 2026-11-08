@@ -15,7 +15,7 @@
 | رابط حذف الحساب (Google Play) | `<رابط الموقع>/privacy.html#ar` |
 | موقع الدعم (App Store) | `<رابط الموقع>/privacy.html` |
 
-`<رابط الموقع>` هو عنوان الاستضافة الحالي، مثل `https://reshy0643-pixel.github.io/store/health`.
+`<رابط الموقع>` هو عنوان الاستضافة الحالي، مثل `https://6nsd6p65g6-droid.github.io/Avina/health`.
 
 ---
 

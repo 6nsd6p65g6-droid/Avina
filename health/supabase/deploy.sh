@@ -7,7 +7,7 @@
 #   ADMIN_EMAIL            (اختياري) بريد المدير بعد إنشاء حسابه في التطبيق
 set -euo pipefail
 REF="${SUPABASE_PROJECT_REF:-ifpduyrdexsbpyvcjjxz}"
-SITE="${SITE_URL:-https://reshy0643-pixel.github.io/store/health/}"
+SITE="${SITE_URL:-https://6nsd6p65g6-droid.github.io/Avina/health/}"
 CLI=(npx -y supabase@2.121.0)
 cd "$(dirname "$0")/.."   # مجلد health
 : "${SUPABASE_ACCESS_TOKEN:?SUPABASE_ACCESS_TOKEN غير موجود في متغيرات البيئة}"

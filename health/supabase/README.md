@@ -10,7 +10,7 @@
 ## 2) إعداد تسجيل الدخول بالبريد
 1. **Authentication ← Sign In / Providers**: تأكد أن **Email** مفعّل.
 2. **Authentication ← URL Configuration**:
-   - **Site URL**: رابط التطبيق، مثلاً `https://reshy0643-pixel.github.io/store/health/`
+   - **Site URL**: رابط التطبيق، مثلاً `https://6nsd6p65g6-droid.github.io/Avina/health/`
    - **Redirect URLs**: أضف الرابط نفسه.
 3. (اختياري) **Authentication ← Emails**: يمكنك ترجمة رسائل التأكيد إلى العربية.
 
