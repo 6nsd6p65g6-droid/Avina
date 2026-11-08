@@ -1,0 +1,20 @@
+# GitHub Pages ينشر الموقع من الفرع gh-pages؛ هذه الخطوة تنسخ إليه كل تحديث يُدمج في main.
+name: Publish site (main → gh-pages)
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: pages-sync
+  cancel-in-progress: true
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Copy main to gh-pages
+        run: git push origin HEAD:refs/heads/gh-pages --force
