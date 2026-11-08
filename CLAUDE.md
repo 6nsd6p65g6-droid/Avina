@@ -6,6 +6,8 @@
   - المستودع الحالي: `6nsd6p65g6-droid/Avina` (حساب GitHub الجديد للمستخدم، أُنشئ في 8 نوفمبر). موقعه على GitHub Pages:
     https://6nsd6p65g6-droid.github.io/Avina/health/
   - الحساب القديم `reshy0643-pixel` معلَّق، والمستودع القديم `reshy0643-pixel/store` لا يعمل.
+  - في الجلسات الجديدة قد يعود `origin` إلى المستودع القديم. ارفع إلى `https://github.com/6nsd6p65g6-droid/avina` (أضفه كـ remote باسم `avina`).
+  - **النشر:** GitHub Pages ينشر من الفرع `gh-pages`. خطوة `.github/workflows/pages-sync.yml` تنسخ إليه `main` بعد كل دمج تلقائياً.
   - `index.html`: التطبيق كاملاً.
   - `privacy.html` و`terms.html`: سياسة الخصوصية وشروط الاستخدام (عربي وإنجليزي)، يطلبهما المتجران.
   - `supabase/`: خادم التطبيق على Supabase (مشروع `ifpduyrdexsbpyvcjjxz`)، وفيه:
@@ -37,6 +39,7 @@
 **ما تمّ:**
 - 7 نوفمبر 2026: أُضيفت النطاقات `api.supabase.com` و`ifpduyrdexsbpyvcjjxz.supabase.co` و`reshy0643-pixel.github.io` إلى البيئة.
 - 7 نوفمبر 2026: أُضيف `dl.google.com` لتنزيل أدوات أندرويد.
+- 8 نوفمبر 2026: أُضيف `6nsd6p65g6-droid.github.io` لفحص الموقع الجديد.
 - تأكدنا أن المفتاح العام صحيح، وأن تسجيل الدخول بالبريد مفعّل.
 - لم تُنشأ قاعدة البيانات، ولم تُنشر الدالتان `ai` و`pay` بعد.
 
@@ -90,4 +93,4 @@
 
 ## أسلوب العمل
 - تحدّث مع المستخدم بالعربية فقط.
-- اختبر قبل الرفع، ثم ارفع عبر طلب دمج إلى `main` (Pages ينشر من `main`).
+- اختبر قبل الرفع، ثم ارفع عبر طلب دمج إلى `main`. الموقع يتحدث وحده بعد الدمج عبر `gh-pages`.
