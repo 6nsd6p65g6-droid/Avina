@@ -1,7 +1,10 @@
 // أفينا — خادم الذكاء الاصطناعي (Supabase Edge Function باسم "ai")
-// المفتاح السري ANTHROPIC_API_KEY يوضع في: Edge Functions ← Secrets، ولا يوضع في التطبيق أبداً.
+// المفاتيح السرية توضع في: Edge Functions ← Secrets، ولا توضع في التطبيق أبداً:
+//   GROQ_API_KEY (أو AI_API_KEY)  مزوّد مجاني متوافق مع OpenAI، انظر provider.ts
+//   ANTHROPIC_API_KEY              (اختياري) نماذج Claude للخطط التي نموذجها claude-*
 import Anthropic from "npm:@anthropic-ai/sdk@1.3.0";
 import { createClient } from "npm:@supabase/supabase-js@2.117.3";
+import { openChat, openConfig, openJSON, ProviderError, type Turn } from "./provider.ts";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -11,14 +14,28 @@ const CORS = {
 const ALLOWED_MODELS = new Set(["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"]);
 const LIBRARY_MODEL = "claude-opus-5-5"; // مقالات الموسوعة تُكتب مرة واحدة بأقوى نموذج وتُحفظ للجميع
 
-const anthropic = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY") });
+const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY") || "";
+const anthropic = ANTHROPIC_KEY ? new Anthropic({ apiKey: ANTHROPIC_KEY }) : null;
+const OPEN = openConfig((k) => Deno.env.get(k));
+
+// أي مزوّد يخدم هذا النموذج؟ Claude إن كان نموذج الخطة claude-* ومفتاحه موجوداً، وإلا المزوّد المفتوح.
+type Route = { kind: "claude"; model: string } | { kind: "open"; models: string[] } | null;
+function route(planModel: string, best: boolean): Route {
+  if (anthropic && ALLOWED_MODELS.has(planModel)) return { kind: "claude", model: planModel };
+  if (OPEN) {
+    if (planModel && !planModel.startsWith("claude-")) return { kind: "open", models: [planModel, ...OPEN.models.filter((m) => m !== planModel)] };
+    return { kind: "open", models: best ? OPEN.bestModels : OPEN.models };
+  }
+  if (anthropic) return { kind: "claude", model: "claude-haiku-5-5" };
+  return null;
+}
+const libraryRoute = (): Route => (anthropic ? { kind: "claude", model: LIBRARY_MODEL } : OPEN ? { kind: "open", models: OPEN.bestModels } : null);
 // يقرأ المفتاح السري الذي يوفّره Supabase تلقائياً، أو SB_SECRET_KEY إن أضفته يدوياً
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SB_SECRET_KEY") || "";
 const db = createClient(Deno.env.get("SUPABASE_URL")!, SERVICE_KEY, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
-type Turn = { role: "user" | "assistant"; content: string };
 type Plan = { id: string; name: string; daily_ai: number; model: string; can_generate: boolean; can_verify: boolean };
 
 const json = (body: unknown, status = 200) =>
@@ -137,6 +154,7 @@ const VERIFY_SCHEMA = {
 // ---------- استدعاء Claude ----------
 // Opus وSonnet: يُفعَّل التحويل التلقائي لنموذج بديل إذا رفض النموذج الطلب (fallbacks: "default").
 function startStream(model: string, system: string, messages: Turn[], maxTokens: number, effort: "low" | "medium" | "high", schema?: Record<string, unknown>) {
+  if (!anthropic) throw new Error("ANTHROPIC_API_KEY is not set");
   const output_config = schema
     ? { effort, format: { type: "json_schema" as const, schema } }
     : { effort };
@@ -178,12 +196,13 @@ function jsonWithKeepalive(work: () => Promise<unknown>): Response {
   return new Response(body, { headers: { ...CORS, "Content-Type": "application/json; charset=utf-8" } });
 }
 
-async function generateJSON(system: string, prompt: string, schema: Record<string, unknown>) {
-  const stream = startStream(LIBRARY_MODEL, system, [{ role: "user", content: prompt }], 12000, "medium", schema);
+async function generateJSON(r: NonNullable<Route>, system: string, prompt: string, schema: Record<string, unknown>, name: string): Promise<{ value: Record<string, unknown>; model: string }> {
+  if (r.kind === "open") return await openJSON(OPEN!, r.models, system, prompt, schema, name, 8000);
+  const stream = startStream(r.model, system, [{ role: "user", content: prompt }], 12000, "medium", schema);
   const msg = (await stream.finalMessage()) as unknown as FinalMsg;
   if (msg.stop_reason === "refusal") throw new Error("refusal");
   if (msg.stop_reason === "max_tokens") throw new Error("max_tokens");
-  return JSON.parse(textOf(msg));
+  return { value: JSON.parse(textOf(msg)), model: r.model };
 }
 
 // ---------- نقطة الدخول ----------
@@ -228,13 +247,15 @@ Deno.serve(async (req: Request) => {
     const { data: cached } = await db.from("articles").select("data, verify, reviewed").eq("topic", key).maybeSingle();
     if (cached) return json({ article: cached.data, verify: cached.verify, reviewed: cached.reviewed, cached: true });
     if (!plan.can_generate && !isAdmin) return json({ error: "upgrade", need: "pro" }, 402);
+    const lib = libraryRoute();
+    if (!lib) return json({ error: "ai_failed" }, 503);
     const used = await consume(user.id, plan.daily_ai, isAdmin);
     if (used === null) return json({ error: "limit", limit: plan.daily_ai, plan: plan.id }, 429);
     return jsonWithKeepalive(async () => {
       try {
-        const article = await generateJSON(en ? "You are a precise medical reference. Answer in English." : "أنت مرجع طبي دقيق. أجب بالعربية.", EN_NOTE + articlePrompt(topic), ARTICLE_SCHEMA);
+        const { value: article, model } = await generateJSON(lib, en ? "You are a precise medical reference. Answer in English." : "أنت مرجع طبي دقيق. أجب بالعربية.", EN_NOTE + articlePrompt(topic), ARTICLE_SCHEMA, "article");
         if (article.kind !== "off_topic") {
-          await db.from("articles").upsert({ topic: key, data: article, model: LIBRARY_MODEL, updated_at: new Date().toISOString() });
+          await db.from("articles").upsert({ topic: key, data: article, model, updated_at: new Date().toISOString() });
         } else {
           await refund(user.id, isAdmin);
         }
@@ -254,12 +275,14 @@ Deno.serve(async (req: Request) => {
     if (!row) return json({ error: "not_found" }, 404);
     if (row.verify) return json({ verify: row.verify, cached: true });
     if (!plan.can_verify && !isAdmin) return json({ error: "upgrade", need: "pro" }, 402);
+    const lib = libraryRoute();
+    if (!lib) return json({ error: "ai_failed" }, 503);
     const used = await consume(user.id, plan.daily_ai, isAdmin);
     if (used === null) return json({ error: "limit", limit: plan.daily_ai, plan: plan.id }, 429);
     return jsonWithKeepalive(async () => {
       try {
         const a = row.data as Record<string, unknown>;
-        const verify = await generateJSON(en ? "You are a precise medical reviewer. Answer in English." : "أنت طبيب مراجع دقيق. أجب بالعربية.", EN_NOTE + verifyPrompt(topic, { summary: a.summary, sections: a.sections, urgent: a.urgent }), VERIFY_SCHEMA);
+        const { value: verify } = await generateJSON(lib, en ? "You are a precise medical reviewer. Answer in English." : "أنت طبيب مراجع دقيق. أجب بالعربية.", EN_NOTE + verifyPrompt(topic, { summary: a.summary, sections: a.sections, urgent: a.urgent }), VERIFY_SCHEMA, "review");
         await db.from("articles").update({ verify, updated_at: new Date().toISOString() }).eq("topic", key);
         return { verify, cached: false };
       } catch (e) {
@@ -277,15 +300,49 @@ Deno.serve(async (req: Request) => {
       .map((t: Turn) => ({ role: t.role, content: t.content.slice(0, 4000) }));
     while (turns.length && turns[0].role !== "user") turns.shift();
     if (!turns.length || turns[turns.length - 1].role !== "user") return json({ error: "bad_request" }, 400);
-    const model = ALLOWED_MODELS.has(plan.model) ? plan.model : "claude-haiku-5-5";
+    const r = route(plan.model, plan.id === "ultra");
+    if (!r) return json({ error: "ai_failed" }, 503);
     const used = await consume(user.id, plan.daily_ai, isAdmin);
     if (used === null) return json({ error: "limit", limit: plan.daily_ai, plan: plan.id }, 429);
 
     const emNum = clean(body.emNum, 20) || "112";
     const context = typeof body.context === "string" ? body.context.slice(0, 4000) : "";
-    const stream = startStream(model, EN_NOTE + chatRules(emNum, context), turns, 8000, "medium");
+    const system = EN_NOTE + chatRules(emNum, context);
     const enc = new TextEncoder();
+    const quotaHeaders = { ...CORS, "Content-Type": "text/plain; charset=utf-8", "X-Quota-Used": String(used), "X-Quota-Limit": String(plan.daily_ai), "Access-Control-Expose-Headers": "X-Quota-Used, X-Quota-Limit" };
+    const failNote = en ? "\n\n[The answer could not be completed. Please try again.]" : "\n\n[تعذّر إكمال الإجابة. حاول مرة أخرى.]";
     let sent = false;
+
+    // ----- مزوّد مجاني متوافق مع OpenAI -----
+    if (r.kind === "open") {
+      let chat: Awaited<ReturnType<typeof openChat>>;
+      try {
+        chat = await openChat(OPEN!, r.models, system, turns, 4000);
+      } catch (e) {
+        console.error(e);
+        await refund(user.id, isAdmin);
+        const busy = e instanceof ProviderError && e.busy;
+        return json({ error: busy ? "rate_limited" : "ai_failed" }, busy ? 503 : 502);
+      }
+      const out = new ReadableStream<Uint8Array>({
+        async start(controller) {
+          try {
+            for await (const piece of chat.chunks) { sent = true; controller.enqueue(enc.encode(piece)); }
+            if (!sent) { await refund(user.id, isAdmin); controller.enqueue(enc.encode(failNote)); }
+          } catch (e) {
+            console.error(e);
+            if (!sent) await refund(user.id, isAdmin);
+            controller.enqueue(enc.encode(failNote));
+          } finally {
+            controller.close();
+          }
+        },
+        cancel() { chat.cancel(); },
+      });
+      return new Response(out, { headers: quotaHeaders });
+    }
+
+    const stream = startStream(r.model, system, turns, 8000, "medium");
     const out = new ReadableStream<Uint8Array>({
       async start(controller) {
         try {
@@ -303,7 +360,7 @@ Deno.serve(async (req: Request) => {
         } catch (e) {
           console.error(e);
           if (!sent) await refund(user.id, isAdmin);
-          controller.enqueue(enc.encode(en ? "\n\n[The answer could not be completed. Please try again.]" : "\n\n[تعذّر إكمال الإجابة. حاول مرة أخرى.]"));
+          controller.enqueue(enc.encode(failNote));
         } finally {
           controller.close();
         }
@@ -312,9 +369,7 @@ Deno.serve(async (req: Request) => {
         stream.abort();
       },
     });
-    return new Response(out, {
-      headers: { ...CORS, "Content-Type": "text/plain; charset=utf-8", "X-Quota-Used": String(used), "X-Quota-Limit": String(plan.daily_ai), "Access-Control-Expose-Headers": "X-Quota-Used, X-Quota-Limit" },
-    });
+    return new Response(out, { headers: quotaHeaders });
   }
 
   return json({ error: "bad_request" }, 400);
