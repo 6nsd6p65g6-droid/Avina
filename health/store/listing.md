@@ -138,7 +138,8 @@ Important: Avina is not a medical device and does not diagnose or treat any cond
 | Health and fitness → Health info | مجموعة، اختيارية، لوظائف التطبيق |
 | App activity → Other user-generated content | مجموعة (أسئلة الطبيب الذكي)، اختيارية، لوظائف التطبيق |
 | App info and performance | لا |
-| Location / Contacts / Photos / Financial info | لا |
+| Location / Contacts / Financial info | لا |
+| Photos | لا (صورة التحاليل تُعالَج لحظياً ولا تُحفظ) |
 
 ملاحظة: Supabase ومزوّدو الذكاء الاصطناعي (Groq وAnthropic) مزوّدو خدمة يعالجون البيانات نيابة عنا، وهذا لا يُعد «مشاركة» في تعريف Google.
 

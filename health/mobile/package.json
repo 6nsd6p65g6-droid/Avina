@@ -1,6 +1,6 @@
 {
   "name": "avina-mobile",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Avina native apps (Android + iOS) built with Capacitor from the web app in ../",
   "scripts": {
