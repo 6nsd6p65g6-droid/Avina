@@ -1573,7 +1573,7 @@ function rules(){return (EN?'IMPORTANT: The user reads English. Write every repl
 
 بيانات المستخدم من التطبيق (استخدمها حين تكون ذات صلة):
 ${aiContext()}`}
-function chatMD(t){return mdLite(t).replace(/<p>\s*درجة الثقة\s*[:：]\s*(عالية|متوسطة|منخفضة)[.\s]*<\/p>/,(m,l)=>`<span class="chip conf ${l==='عالية'?'ok':l==='متوسطة'?'warn':'bad'}">درجة الثقة: ${l}</span>`)}
+function chatMD(t){return mdLite(t).replace(/<p>\s*(?:<b>)?\s*(?:درجة الثقة|Confidence)\s*[:：]\s*(?:<\/b>)?\s*(عالية|متوسطة|منخفضة|high|medium|low)[.\s]*(?:<\/b>)?\s*<\/p>/i,(m,l)=>{l=({high:'عالية',medium:'متوسطة',low:'منخفضة'})[l.toLowerCase()]||l;return `<span class="chip conf ${l==='عالية'?'ok':l==='متوسطة'?'warn':'bad'}">درجة الثقة: ${l}</span>`})}
 function sheetChat(prefill,draft){
   if(!aiOn()){if(CLOUD)sheetAccount('in','سجّل الدخول لتتحدث مع طبيب أفينا.');else toast('المساعد الذكي غير متاح هنا');return}
   openSheet('طبيب أفينا',`<p class="hint" style="margin:0">مساعد ذكي للإرشاد العام، لا يغني عن الطبيب. في الطوارئ اتصل بـ<bdi>${esc(emNum())}</bdi>.</p>
