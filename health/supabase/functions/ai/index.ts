@@ -237,6 +237,11 @@ Deno.serve(async (req: Request) => {
 
   const en = body.lang === "en";
   const EN_NOTE = en ? "IMPORTANT: The user reads English. Write everything in clear, simple English.\n\n" : "";
+  // تذكير أخير باللغة: النماذج المفتوحة تتبع لغة التعليمات إن لم يُكرَّر الطلب في آخرها
+  const CHAT_TAIL = en
+    ? '\n\nLANGUAGE (this overrides everything above): reply ONLY in English, even though these instructions are written in Arabic. Write the urgency line as one of "Emergency now", "Doctor today", "Appointment within days" or "Home care". End with a separate final line: "Confidence: high", "Confidence: medium" or "Confidence: low". Use the digits 0-9.'
+    : "\n\nاكتب الأرقام بالصيغة 0-9.";
+  const JSON_TAIL = en ? "\n\nLANGUAGE (this overrides everything above): write every text value in English, even though these instructions are written in Arabic." : "";
   const { plan, isAdmin } = await loadPlan(user.id);
 
   // ----- مقالة من الموسوعة -----
@@ -253,7 +258,7 @@ Deno.serve(async (req: Request) => {
     if (used === null) return json({ error: "limit", limit: plan.daily_ai, plan: plan.id }, 429);
     return jsonWithKeepalive(async () => {
       try {
-        const { value: article, model } = await generateJSON(lib, en ? "You are a precise medical reference. Answer in English." : "أنت مرجع طبي دقيق. أجب بالعربية.", EN_NOTE + articlePrompt(topic), ARTICLE_SCHEMA, "article");
+        const { value: article, model } = await generateJSON(lib, en ? "You are a precise medical reference. Answer in English." : "أنت مرجع طبي دقيق. أجب بالعربية.", EN_NOTE + articlePrompt(topic) + JSON_TAIL, ARTICLE_SCHEMA, "article");
         if (article.kind !== "off_topic") {
           await db.from("articles").upsert({ topic: key, data: article, model, updated_at: new Date().toISOString() });
         } else {
@@ -282,7 +287,7 @@ Deno.serve(async (req: Request) => {
     return jsonWithKeepalive(async () => {
       try {
         const a = row.data as Record<string, unknown>;
-        const { value: verify } = await generateJSON(lib, en ? "You are a precise medical reviewer. Answer in English." : "أنت طبيب مراجع دقيق. أجب بالعربية.", EN_NOTE + verifyPrompt(topic, { summary: a.summary, sections: a.sections, urgent: a.urgent }), VERIFY_SCHEMA, "review");
+        const { value: verify } = await generateJSON(lib, en ? "You are a precise medical reviewer. Answer in English." : "أنت طبيب مراجع دقيق. أجب بالعربية.", EN_NOTE + verifyPrompt(topic, { summary: a.summary, sections: a.sections, urgent: a.urgent }) + JSON_TAIL, VERIFY_SCHEMA, "review");
         await db.from("articles").update({ verify, updated_at: new Date().toISOString() }).eq("topic", key);
         return { verify, cached: false };
       } catch (e) {
@@ -307,7 +312,7 @@ Deno.serve(async (req: Request) => {
 
     const emNum = clean(body.emNum, 20) || "112";
     const context = typeof body.context === "string" ? body.context.slice(0, 4000) : "";
-    const system = EN_NOTE + chatRules(emNum, context);
+    const system = EN_NOTE + chatRules(emNum, context) + CHAT_TAIL;
     const enc = new TextEncoder();
     const quotaHeaders = { ...CORS, "Content-Type": "text/plain; charset=utf-8", "X-Quota-Used": String(used), "X-Quota-Limit": String(plan.daily_ai), "Access-Control-Expose-Headers": "X-Quota-Used, X-Quota-Limit" };
     const failNote = en ? "\n\n[The answer could not be completed. Please try again.]" : "\n\n[تعذّر إكمال الإجابة. حاول مرة أخرى.]";
