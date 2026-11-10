@@ -4,9 +4,11 @@
 //   AI_BASE_URL   (اختياري) عنوان الواجهة. الافتراضي Groq.
 //   AI_MODEL      (اختياري) نموذج أو أكثر مفصولة بفواصل؛ يُجرَّب التالي إذا بلغ الأول حدّه أو لم يعد متاحاً.
 //   AI_MODEL_BEST (اختياري) نموذج أقوى لخطة ألترا ولمقالات الموسوعة. الافتراضي AI_MODEL.
+//   AI_MODEL_VISION (اختياري) نموذج يقرأ الصور، لقراءة التحاليل.
 
 export type Turn = { role: "user" | "assistant"; content: string };
-export type OpenConfig = { baseUrl: string; apiKey: string; models: string[]; bestModels: string[] };
+export type OpenConfig = { baseUrl: string; apiKey: string; models: string[]; bestModels: string[]; visionModels: string[] };
+export type ImageInput = { mime: string; data: string };
 
 const list = (s: string | undefined) => (s ?? "").split(",").map((x) => x.trim()).filter(Boolean);
 
@@ -14,13 +16,16 @@ export function openConfig(env: (k: string) => string | undefined): OpenConfig |
   const apiKey = env("AI_API_KEY") || env("GROQ_API_KEY") || "";
   if (!apiKey) return null;
   const models = list(env("AI_MODEL"));
-  if (!models.length) models.push("openai/gpt-oss-120b", "llama-3.3-70b-versatile");
+  if (!models.length) models.push("openai/gpt-oss-120b", "qwen/qwen3.8-27b");
   const best = list(env("AI_MODEL_BEST"));
+  const vision = list(env("AI_MODEL_VISION"));
+  if (!vision.length) vision.push("qwen/qwen3.8-27b");
   return {
     baseUrl: (env("AI_BASE_URL") || "https://api.groq.com/openai/v1").replace(/\/+$/, ""),
     apiKey,
     models,
     bestModels: best.length ? best : models,
+    visionModels: vision,
   };
 }
 
@@ -156,11 +161,12 @@ function conforms(obj: unknown, schema: Record<string, unknown>): boolean {
 }
 
 /** رد JSON مطابق للمخطط. يجرّب json_schema ثم json_object ثم نصاً عادياً، حسب ما يدعمه المزوّد والنموذج. */
-export async function openJSON(cfg: OpenConfig, models: string[], system: string, prompt: string, schema: Record<string, unknown>, name: string, maxTokens: number) {
-  const messages = [
-    { role: "system", content: system },
-    { role: "user", content: `${prompt}\n\nأعد كائن JSON واحداً فقط يطابق هذا المخطط (JSON Schema) تماماً، بلا أي نص قبله أو بعده:\n${JSON.stringify(schema)}` },
-  ];
+export async function openJSON(cfg: OpenConfig, models: string[], system: string, prompt: string, schema: Record<string, unknown>, name: string, maxTokens: number, image?: ImageInput) {
+  const ask = `${prompt}\n\nأعد كائن JSON واحداً فقط يطابق هذا المخطط (JSON Schema) تماماً، بلا أي نص قبله أو بعده:\n${JSON.stringify(schema)}`;
+  // مع الصورة تُدمج التعليمات في رسالة المستخدم: بعض نماذج الرؤية لا تقبل رسالة نظام مع صورة
+  const messages = image
+    ? [{ role: "user", content: [{ type: "text", text: `${system}\n\n${ask}` }, { type: "image_url", image_url: { url: `data:${image.mime};base64,${image.data}` } }] }]
+    : [{ role: "system", content: system }, { role: "user", content: ask }];
   const formats: Array<Record<string, unknown>> = [
     { response_format: { type: "json_schema", json_schema: { name, strict: true, schema } } },
     { response_format: { type: "json_object" } },
@@ -181,4 +187,28 @@ export async function openJSON(cfg: OpenConfig, models: string[], system: string
     }
   }
   throw last;
+}
+
+/** أسماء النماذج المتاحة لهذا المفتاح (للتشخيص من لوحة المدير). */
+export async function openModels(cfg: OpenConfig): Promise<string[]> {
+  const res = await fetch(`${cfg.baseUrl}/models`, { headers: { Authorization: `Bearer ${cfg.apiKey}` } });
+  if (!res.ok) throw new ProviderError(res.status, (await res.text()).slice(0, 300));
+  const data = (await res.json())?.data;
+  return Array.isArray(data) ? data.map((m: { id?: string }) => String(m?.id ?? "")).filter(Boolean).sort() : [];
+}
+
+/** تجربة نموذج واحد بطلب صغير (للمدير): هل يعمل؟ وهل يقرأ الصور؟ */
+export async function openProbe(cfg: OpenConfig, model: string, image?: ImageInput): Promise<{ status: number; text: string }> {
+  const content = image
+    ? [{ type: "text", text: "What is the hemoglobin value in this image? Answer with the number only." }, { type: "image_url", image_url: { url: `data:${image.mime};base64,${image.data}` } }]
+    : "Reply with the single word: ok";
+  const res = await fetch(`${cfg.baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${cfg.apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model, messages: [{ role: "user", content }], max_tokens: 400 }),
+  });
+  const raw = await res.text();
+  let text = raw.slice(0, 400);
+  try { const j = JSON.parse(raw); text = String(j?.choices?.[0]?.message?.content ?? j?.error?.message ?? raw).slice(0, 400); } catch { /* keep raw */ }
+  return { status: res.status, text };
 }

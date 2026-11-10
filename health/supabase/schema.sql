@@ -83,6 +83,13 @@ insert into public.plans (id, name, price_usd, daily_ai, model, can_generate, ca
   '["كل مزايا برو","الطبيب الخبير: أقوى نموذج ذكاء اصطناعي وأدقه","15 سؤالاً يومياً للطبيب الخبير","ملفات العائلة وقراءة التحاليل بالصورة (قريباً)"]',3)
 on conflict (id) do nothing;
 
+-- صلاحيات كل خطة للميزات الإضافية: family (ملفات العائلة)، labs (قراءة التحاليل بالصورة)، report (التقرير الصحي الذكي)، interactions (تداخل الأدوية)
+alter table public.plans add column if not exists caps text[] not null default '{}';
+update public.plans set caps = array['family','labs','report','interactions'] where id = 'ultra' and caps = '{}';
+-- قائمة مزايا ألترا بعد إضافة الميزات (تُحدَّث فقط إن لم يغيّرها المدير)
+update public.plans set features = '["كل مزايا برو","ملفات العائلة: حتى 5 أفراد بملفاتهم وقراءاتهم وأدويتهم","قراءة التحاليل بالصورة وشرح كل قيمة","التقرير الصحي الذكي لقياساتك واتجاهاتها","فحص تداخل الأدوية والمكملات"]'::jsonb
+  where id = 'ultra' and features::text like '%قريباً%';
+
 -- ---------- الإعدادات (يعدّلها المدير من لوحة التحكم) ----------
 create table if not exists public.settings (
   key text primary key,
